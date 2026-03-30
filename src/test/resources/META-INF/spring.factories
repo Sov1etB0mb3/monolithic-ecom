@@ -1,0 +1,3 @@
+org.springframework.test.context.ContextCustomizerFactory = \
+    com.calt.burox.config.SqlTestContainersSpringContextCustomizerFactory,com.\
+    calt.burox.config.TestContainersSpringContextCustomizerFactory
