@@ -1,0 +1,39 @@
+{
+  "annotations": {
+    "changelogDate": "20260401075139"
+  },
+  "applications": "*",
+  "entityTableName": "jhi_user",
+  "fields": [
+    {
+      "fieldName": "username",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "password",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "Instant"
+    }
+  ],
+  "name": "User",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "userRole",
+      "otherEntityRelationshipName": "user",
+      "relationshipName": "roles",
+      "relationshipSide": "right",
+      "relationshipType": "one-to-many"
+    }
+  ],
+  "service": "serviceClass"
+}

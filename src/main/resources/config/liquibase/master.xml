@@ -14,7 +14,17 @@
     <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false"/>
   <include file="config/liquibase/changelog/int_table_changelog2.xml" relativeToChangelogFile="false"/>
 <!--    <include file="config/liquibase/changelog/30-01-changelog.xml" relativeToChangelogFile="false"/>-->
+    <include file="config/liquibase/changelog/20260401075137_added_entity_Category.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260401075138_added_entity_Product.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260401075139_added_entity_User.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260401075140_added_entity_UserRole.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260401075141_added_entity_RolePermission.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260401075142_added_entity_Role.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260401075143_added_entity_Permission.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
+    <include file="config/liquibase/changelog/20260401075138_added_entity_constraints_Product.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260401075140_added_entity_constraints_UserRole.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260401075141_added_entity_constraints_RolePermission.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 <!--  <include file="config/liquibase/changelog/30-01-changelog.xml" relativeToChangelogFile="false"/>-->

@@ -1,0 +1,138 @@
+<div>
+  <h2 id="page-heading" data-cy="RolePermissionHeading">
+    <span jhiTranslate="monolithicEcomApp.rolePermission.home.title">Role Permissions</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
+        <fa-icon icon="sync" [animation]="isLoading ? 'spin' : undefined"></fa-icon>
+        <span jhiTranslate="monolithicEcomApp.rolePermission.home.refreshListLabel">Refresh list</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-role-permission"
+        [routerLink]="['/role-permission/new']"
+      >
+        <fa-icon icon="plus"></fa-icon>
+        <span class="hidden-sm-down" jhiTranslate="monolithicEcomApp.rolePermission.home.createLabel">Create a new Role Permission</span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error />
+
+  <jhi-alert />
+
+  <form name="searchForm" class="row row-cols-sm-auto align-items-center">
+    <div class="col-sm-12">
+      <div class="input-group w-100 mt-3">
+        <label class="visually-hidden" for="currentSearch" jhiTranslate="monolithicEcomApp.rolePermission.home.search"
+          >Search for Role Permission</label
+        >
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="currentSearch"
+          id="currentSearch"
+          name="currentSearch"
+          placeholder="{{ 'monolithicEcomApp.rolePermission.home.search' | translate }}"
+        />
+
+        <button class="btn btn-info" (click)="search(currentSearch)">
+          <fa-icon icon="search"></fa-icon>
+        </button>
+
+        @if (currentSearch) {
+          <button class="btn btn-danger" (click)="search('')">
+            <fa-icon icon="trash-alt"></fa-icon>
+          </button>
+        }
+      </div>
+    </div>
+  </form>
+
+  @if (rolePermissions().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span jhiTranslate="monolithicEcomApp.rolePermission.home.notFound">No Role Permissions found</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" jhiSortBy="id">
+              <div class="d-flex">
+                <span jhiTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="role.id">
+              <div class="d-flex">
+                <span jhiTranslate="monolithicEcomApp.rolePermission.role">Role</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="permission.id">
+              <div class="d-flex">
+                <span jhiTranslate="monolithicEcomApp.rolePermission.permission">Permission</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (rolePermission of rolePermissions(); track trackId(rolePermission)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/role-permission', rolePermission.id, 'view']">{{ rolePermission.id }}</a>
+              </td>
+              <td>
+                @if (rolePermission.role) {
+                  <div>
+                    <a [routerLink]="['/role', rolePermission.role.id, 'view']">{{ rolePermission.role.id }}</a>
+                  </div>
+                }
+              </td>
+              <td>
+                @if (rolePermission.permission) {
+                  <div>
+                    <a [routerLink]="['/permission', rolePermission.permission.id, 'view']">{{ rolePermission.permission.id }}</a>
+                  </div>
+                }
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a
+                    [routerLink]="['/role-permission', rolePermission.id, 'view']"
+                    class="btn btn-info btn-sm"
+                    data-cy="entityDetailsButton"
+                  >
+                    <fa-icon icon="eye"></fa-icon>
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+                  </a>
+
+                  <a
+                    [routerLink]="['/role-permission', rolePermission.id, 'edit']"
+                    class="btn btn-primary btn-sm"
+                    data-cy="entityEditButton"
+                  >
+                    <fa-icon icon="pencil-alt"></fa-icon>
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(rolePermission)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times"></fa-icon>
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

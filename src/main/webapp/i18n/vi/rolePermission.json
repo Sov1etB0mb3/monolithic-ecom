@@ -1,0 +1,26 @@
+{
+  "monolithicEcomApp": {
+    "rolePermission": {
+      "home": {
+        "title": "Role Permissions",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Thêm mới một Role Permission",
+        "createOrEditLabel": "Thêm mới hoặc cập nhật Role Permission",
+        "search": "Tìm Role Permission",
+        "notFound": "No Role Permissions found"
+      },
+      "created": "Một Role Permission mới được tạo với định danh {{ param }}",
+      "updated": "Một Role Permission cập nhật với định danh {{ param }}",
+      "deleted": "Một Role Permission đã xóa với định danh {{ param }}",
+      "delete": {
+        "question": "Bạn có chắc là muốn xóa Role Permission {{ id }}?"
+      },
+      "detail": {
+        "title": "Role Permission"
+      },
+      "id": "ID",
+      "role": "Role",
+      "permission": "Permission"
+    }
+  }
+}

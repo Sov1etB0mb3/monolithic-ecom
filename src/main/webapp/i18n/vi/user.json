@@ -1,0 +1,29 @@
+{
+  "monolithicEcomApp": {
+    "user": {
+      "home": {
+        "title": "Users",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Thêm mới một User",
+        "createOrEditLabel": "Thêm mới hoặc cập nhật User",
+        "search": "Tìm User",
+        "notFound": "No Users found"
+      },
+      "created": "Một User mới được tạo với định danh {{ param }}",
+      "updated": "Một User cập nhật với định danh {{ param }}",
+      "deleted": "Một User đã xóa với định danh {{ param }}",
+      "delete": {
+        "question": "Bạn có chắc là muốn xóa User {{ id }}?"
+      },
+      "detail": {
+        "title": "User"
+      },
+      "id": "ID",
+      "username": "Username",
+      "password": "Password",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "roles": "Roles"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+@if (permission) {
+  <form name="deleteForm" (ngSubmit)="confirmDelete(permission.id!)">
+    <div class="modal-header">
+      <h4 class="modal-title" data-cy="permissionDeleteDialogHeading" jhiTranslate="entity.delete.title">Confirm delete operation</h4>
+    </div>
+
+    <div class="modal-body">
+      <jhi-alert-error />
+      <p
+        id="jhi-delete-permission-heading"
+        jhiTranslate="monolithicEcomApp.permission.delete.question"
+        [translateValues]="{ id: permission.id }"
+      >
+        Are you sure you want to delete Permission {{ permission.id }}?
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="cancel()">
+        <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+      </button>
+
+      <button id="jhi-confirm-delete-permission" data-cy="entityConfirmDeleteButton" type="submit" class="btn btn-danger">
+        <fa-icon icon="times"></fa-icon>&nbsp;<span jhiTranslate="entity.action.delete">Delete</span>
+      </button>
+    </div>
+  </form>
+}

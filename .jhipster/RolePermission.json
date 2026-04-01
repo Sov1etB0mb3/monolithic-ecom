@@ -1,0 +1,27 @@
+{
+  "annotations": {
+    "changelogDate": "20260401075141"
+  },
+  "applications": "*",
+  "fields": [],
+  "name": "RolePermission",
+  "relationships": [
+    {
+      "otherEntityName": "role",
+      "otherEntityRelationshipName": "permissions",
+      "relationshipName": "role",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityName": "permission",
+      "otherEntityRelationshipName": "rolePermission",
+      "relationshipName": "permission",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceClass"
+}

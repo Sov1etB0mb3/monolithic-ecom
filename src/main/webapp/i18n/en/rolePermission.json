@@ -1,0 +1,26 @@
+{
+  "monolithicEcomApp": {
+    "rolePermission": {
+      "home": {
+        "title": "Role Permissions",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Role Permission",
+        "createOrEditLabel": "Create or edit a Role Permission",
+        "search": "Search for Role Permission",
+        "notFound": "No Role Permissions found"
+      },
+      "created": "A new Role Permission is created with identifier {{ param }}",
+      "updated": "A Role Permission is updated with identifier {{ param }}",
+      "deleted": "A Role Permission is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Role Permission {{ id }}?"
+      },
+      "detail": {
+        "title": "Role Permission"
+      },
+      "id": "ID",
+      "role": "Role",
+      "permission": "Permission"
+    }
+  }
+}

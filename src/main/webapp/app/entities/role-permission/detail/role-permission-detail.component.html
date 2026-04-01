@@ -1,0 +1,48 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (rolePermission(); as rolePermissionRef) {
+      <div>
+        <h2 data-cy="rolePermissionDetailsHeading">
+          <span jhiTranslate="monolithicEcomApp.rolePermission.detail.title">Role Permission</span>
+        </h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ rolePermissionRef.id }}</span>
+          </dd>
+          <dt><span jhiTranslate="monolithicEcomApp.rolePermission.role">Role</span></dt>
+          <dd>
+            @if (rolePermission()!.role) {
+              <div>
+                <a [routerLink]="['/role', rolePermission()!.role?.id, 'view']">{{ rolePermissionRef.role?.id }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span jhiTranslate="monolithicEcomApp.rolePermission.permission">Permission</span></dt>
+          <dd>
+            @if (rolePermission()!.permission) {
+              <div>
+                <a [routerLink]="['/permission', rolePermission()!.permission?.id, 'view']">{{ rolePermissionRef.permission?.id }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/role-permission', rolePermissionRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

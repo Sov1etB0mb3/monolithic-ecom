@@ -1,0 +1,27 @@
+{
+  "annotations": {
+    "changelogDate": "20260401075140"
+  },
+  "applications": "*",
+  "fields": [],
+  "name": "UserRole",
+  "relationships": [
+    {
+      "otherEntityName": "user",
+      "otherEntityRelationshipName": "roles",
+      "relationshipName": "user",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityName": "role",
+      "otherEntityRelationshipName": "users",
+      "relationshipName": "role",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceClass"
+}

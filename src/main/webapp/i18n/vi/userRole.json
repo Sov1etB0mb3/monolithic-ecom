@@ -1,0 +1,26 @@
+{
+  "monolithicEcomApp": {
+    "userRole": {
+      "home": {
+        "title": "User Roles",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Thêm mới một User Role",
+        "createOrEditLabel": "Thêm mới hoặc cập nhật User Role",
+        "search": "Tìm User Role",
+        "notFound": "No User Roles found"
+      },
+      "created": "Một User Role mới được tạo với định danh {{ param }}",
+      "updated": "Một User Role cập nhật với định danh {{ param }}",
+      "deleted": "Một User Role đã xóa với định danh {{ param }}",
+      "delete": {
+        "question": "Bạn có chắc là muốn xóa User Role {{ id }}?"
+      },
+      "detail": {
+        "title": "User Role"
+      },
+      "id": "ID",
+      "user": "User",
+      "role": "Role"
+    }
+  }
+}

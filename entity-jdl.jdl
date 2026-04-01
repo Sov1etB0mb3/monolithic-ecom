@@ -1,0 +1,65 @@
+entity Category {
+  name String required maxlength(50)
+  description String maxlength(100)
+  createdAt Instant
+  updatedAt Instant
+}
+
+entity Product {
+ name String required minlength(3)
+ quantity Integer required
+ price Double required
+ createdAt Instant
+ updatedAt Instant
+
+}
+entity User {
+username String required
+password String required
+createdAt Instant
+updatedAt Instant
+}
+
+entity UserRole {
+
+}
+entity RolePermission {
+  // Add RolePermission fields here
+}
+entity Role {
+  name String required
+  description String
+}
+entity Permission {
+  name String required
+  description String
+}
+
+
+relationship OneToMany {
+  Category{listProduct} to Product{category}
+}
+relationship ManyToOne {
+  UserRole{user required} to User{roles}
+  UserRole{role required} to Role{users}
+  RolePermission{role required} to Role{permissions}
+  RolePermission{permission required} to Permission{rolePermission}
+
+}
+
+// Service and pagination options
+service User with serviceClass
+service UserRole with serviceClass
+service Role with serviceClass
+service RolePermission with serviceClass
+service Permission with serviceClass
+service Product with serviceClass
+service Category with serviceClass
+
+
+paginate User with pagination
+paginate Permission with pagination
+paginate Role with pagination
+paginate Category with pagination
+paginate Product with  pagination
+

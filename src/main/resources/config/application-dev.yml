@@ -41,7 +41,6 @@ spring:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
     contexts: dev, faker
     url: jdbc:postgresql://localhost:5432/monolithicEcom?currentSchema=public
-    enabled: true
     user: monolithicEcom
     password: 25251325
   messages:

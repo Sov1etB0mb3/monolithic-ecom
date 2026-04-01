@@ -1,0 +1,140 @@
+package com.calt.burox.service;
+
+import com.calt.burox.domain.RolePermission;
+import com.calt.burox.repository.RolePermissionRepository;
+import com.calt.burox.repository.search.RolePermissionSearchRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+/**
+ * Service Implementation for managing {@link com.calt.burox.domain.RolePermission}.
+ */
+@Service
+@Transactional
+public class RolePermissionService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RolePermissionService.class);
+
+    private final RolePermissionRepository rolePermissionRepository;
+
+    private final RolePermissionSearchRepository rolePermissionSearchRepository;
+
+    public RolePermissionService(
+        RolePermissionRepository rolePermissionRepository,
+        RolePermissionSearchRepository rolePermissionSearchRepository
+    ) {
+        this.rolePermissionRepository = rolePermissionRepository;
+        this.rolePermissionSearchRepository = rolePermissionSearchRepository;
+    }
+
+    /**
+     * Save a rolePermission.
+     *
+     * @param rolePermission the entity to save.
+     * @return the persisted entity.
+     */
+    public Mono<RolePermission> save(RolePermission rolePermission) {
+        LOG.debug("Request to save RolePermission : {}", rolePermission);
+        return rolePermissionRepository.save(rolePermission).flatMap(rolePermissionSearchRepository::save);
+    }
+
+    /**
+     * Update a rolePermission.
+     *
+     * @param rolePermission the entity to save.
+     * @return the persisted entity.
+     */
+    public Mono<RolePermission> update(RolePermission rolePermission) {
+        LOG.debug("Request to update RolePermission : {}", rolePermission);
+        return rolePermissionRepository.save(rolePermission).flatMap(rolePermissionSearchRepository::save);
+    }
+
+    /**
+     * Partially update a rolePermission.
+     *
+     * @param rolePermission the entity to update partially.
+     * @return the persisted entity.
+     */
+    public Mono<RolePermission> partialUpdate(RolePermission rolePermission) {
+        LOG.debug("Request to partially update RolePermission : {}", rolePermission);
+
+        return rolePermissionRepository
+            .findById(rolePermission.getId())
+            .flatMap(rolePermissionRepository::save)
+            .flatMap(savedRolePermission -> {
+                rolePermissionSearchRepository.save(savedRolePermission);
+                return Mono.just(savedRolePermission);
+            });
+    }
+
+    /**
+     * Get all the rolePermissions.
+     *
+     * @return the list of entities.
+     */
+    @Transactional(readOnly = true)
+    public Flux<RolePermission> findAll() {
+        LOG.debug("Request to get all RolePermissions");
+        return rolePermissionRepository.findAll();
+    }
+
+    /**
+     * Returns the number of rolePermissions available.
+     * @return the number of entities in the database.
+     *
+     */
+    public Mono<Long> countAll() {
+        return rolePermissionRepository.count();
+    }
+
+    /**
+     * Returns the number of rolePermissions available in search repository.
+     *
+     */
+    public Mono<Long> searchCount() {
+        return rolePermissionSearchRepository.count();
+    }
+
+    /**
+     * Get one rolePermission by id.
+     *
+     * @param id the id of the entity.
+     * @return the entity.
+     */
+    @Transactional(readOnly = true)
+    public Mono<RolePermission> findOne(Long id) {
+        LOG.debug("Request to get RolePermission : {}", id);
+        return rolePermissionRepository.findById(id);
+    }
+
+    /**
+     * Delete the rolePermission by id.
+     *
+     * @param id the id of the entity.
+     * @return a Mono to signal the deletion
+     */
+    public Mono<Void> delete(Long id) {
+        LOG.debug("Request to delete RolePermission : {}", id);
+        return rolePermissionRepository.deleteById(id).then(rolePermissionSearchRepository.deleteById(id));
+    }
+
+    /**
+     * Search for the rolePermission corresponding to the query.
+     *
+     * @param query the query of the search.
+     * @return the list of entities.
+     */
+    @Transactional(readOnly = true)
+    public Flux<RolePermission> search(String query) {
+        LOG.debug("Request to search RolePermissions for query {}", query);
+        try {
+            return rolePermissionSearchRepository.search(query);
+        } catch (RuntimeException e) {
+            throw e;
+        }
+    }
+}

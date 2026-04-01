@@ -1,0 +1,42 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (userRole(); as userRoleRef) {
+      <div>
+        <h2 data-cy="userRoleDetailsHeading"><span jhiTranslate="monolithicEcomApp.userRole.detail.title">User Role</span></h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ userRoleRef.id }}</span>
+          </dd>
+          <dt><span jhiTranslate="monolithicEcomApp.userRole.user">User</span></dt>
+          <dd>
+            <span>{{ userRoleRef.user?.id }}</span>
+          </dd>
+          <dt><span jhiTranslate="monolithicEcomApp.userRole.role">Role</span></dt>
+          <dd>
+            @if (userRole()!.role) {
+              <div>
+                <a [routerLink]="['/role', userRole()!.role?.id, 'view']">{{ userRoleRef.role?.id }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/user-role', userRoleRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>
