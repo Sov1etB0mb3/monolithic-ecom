@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @NoArgsConstructor
 @Entity
-@Table(name = "tbl_role")
+@Table(name = "tbl_role", schema = "public")
 @Getter
 @Setter
 public class Role {

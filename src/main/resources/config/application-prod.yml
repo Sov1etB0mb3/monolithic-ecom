@@ -37,10 +37,12 @@ spring:
   liquibase:
     contexts: prod
     url: jdbc:postgresql://localhost:5432/monolithicEcom
+    username: monolithicEcom
+    password: 25251325
   r2dbc:
     url: r2dbc:postgresql://localhost:5432/monolithicEcom
     username: monolithicEcom
-    password:
+    password: 25251325
   thymeleaf:
     cache: true
 

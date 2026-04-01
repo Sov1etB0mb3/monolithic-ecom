@@ -40,15 +40,28 @@ spring:
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
     contexts: dev, faker
-    url: jdbc:postgresql://localhost:5432/monolithicEcom
+    url: jdbc:postgresql://localhost:5432/monolithicEcom?currentSchema=public
+    enabled: true
+    user: monolithicEcom
+    password: 25251325
   messages:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   r2dbc:
-    url: r2dbc:postgresql://localhost:5432/monolithicEcom
+    url: r2dbc:postgresql://localhost:5432/monolithicEcom?currentSchema=public
     username: monolithicEcom
-    password:
+    password: 25251325
   thymeleaf:
     cache: false
+
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/monolithicEcom
+#    username: monolithicEcom
+#    password: 25251325
+#    driver-class-name: org.postgresql.Driver
+#  jpa:
+#    hibernate:
+#      ddl-auto: create-drop
+#
 
 server:
   port: 8080
@@ -65,7 +78,7 @@ jhipster:
   # CORS is only enabled by default with the "dev" profile
   cors:
     # Allow Ionic for JHipster by default (* no longer allowed in Spring Boot 2.4+)
-    allowed-origins: 'http://localhost:8100,https://localhost:8100,http://localhost:9000,https://localhost:9000,http://localhost:4200,https://localhost:4200'
+    allowed-origins: 'http://localhost:8100,https://localhost:8100,http://localhost:9000,https://localhost:9000,http://localhost:4200,https://localhost:4200,https://localhost:8081'
     # Enable CORS when running in GitHub Codespaces
     allowed-origin-patterns: 'https://*.githubpreview.dev'
     allowed-methods: '*'

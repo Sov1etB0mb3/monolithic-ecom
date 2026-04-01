@@ -1,0 +1,128 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="khanhnt (generated)" id="1774940929902-1">
+        <createSequence incrementBy="50" sequenceName="tbl_category_SEQ" startValue="1"/>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-2">
+        <createSequence incrementBy="50" sequenceName="tbl_permisson_SEQ" startValue="1"/>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-3">
+        <createSequence incrementBy="50" sequenceName="tbl_role_SEQ" startValue="1"/>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-4">
+        <createSequence incrementBy="50" sequenceName="tbl_role_permisison_SEQ" startValue="1"/>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-5">
+        <createSequence incrementBy="50" sequenceName="tbl_user_SEQ" startValue="1"/>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-6">
+        <createSequence incrementBy="50" sequenceName="tbl_user_role_SEQ" startValue="1"/>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-7">
+        <createTable tableName="tbl_category">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="tbl_categoryPK"/>
+            </column>
+            <column name="created_at" type="timestamp"/>
+            <column name="description" type="VARCHAR(100)"/>
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-8">
+        <createTable tableName="tbl_permisson">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="tbl_permissonPK"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-9">
+        <createTable tableName="tbl_product">
+            <column name="id" type="CHAR(10)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="tbl_productPK"/>
+            </column>
+            <column name="created_at" type="timestamp"/>
+            <column name="name" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="FLOAT(53)"/>
+            <column name="quantity" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp"/>
+            <column name="categoryid" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-10">
+        <createTable tableName="tbl_refresh_token">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="tbl_refresh_tokenPK"/>
+            </column>
+            <column name="expirytime" type="timestamp"/>
+            <column name="jkt" type="VARCHAR(255)"/>
+            <column name="refreshtoken" type="VARCHAR(255)"/>
+            <column name="userid" type="INT"/>
+            <column name="valid" type="BOOLEAN"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-11">
+        <createTable tableName="tbl_role">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="tbl_rolePK"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-12">
+        <createTable tableName="tbl_role_permisison">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="tbl_role_permisisonPK"/>
+            </column>
+            <column name="permission_id" type="BIGINT"/>
+            <column name="role_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-13">
+        <createTable tableName="tbl_user">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="tbl_userPK"/>
+            </column>
+            <column name="created_at" type="timestamp"/>
+            <column name="password" type="VARCHAR(255)"/>
+            <column name="updated_at" type="timestamp"/>
+            <column name="username" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-14">
+        <createTable tableName="tbl_user_role">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="tbl_user_rolePK"/>
+            </column>
+            <column name="role_id" type="BIGINT"/>
+            <column name="user_id" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-15">
+        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="tbl_role_permisison" constraintName="FK32pcc4jexi78s894502rjodme" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="tbl_role" validate="true"/>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-16">
+        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="tbl_user_role" constraintName="FK6phlytlf1w3h9vutsu019xor5" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="tbl_role" validate="true"/>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-17">
+        <addForeignKeyConstraint baseColumnNames="permission_id" baseTableName="tbl_role_permisison" constraintName="FKco6bj9p5jmqthwfkqjsqmn7xb" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="tbl_permisson" validate="true"/>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-18">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="tbl_user_role" constraintName="FKggc6wjqokl2vlw89y22a1j2oh" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="tbl_user" validate="true"/>
+    </changeSet>
+    <changeSet author="khanhnt (generated)" id="1774940929902-19">
+        <addForeignKeyConstraint baseColumnNames="categoryid" baseTableName="tbl_product" constraintName="FKkwcmxfbd3ukpimruossrwyscm" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="tbl_category" validate="true"/>
+    </changeSet>
+  <changeSet id="v1.0-tag" author="khanhnt">
+    <tagDatabase tag="v1.0"/>
+  </changeSet>
+</databaseChangeLog>
