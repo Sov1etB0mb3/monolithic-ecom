@@ -3,6 +3,7 @@
     "changelogDate": "20260401075141"
   },
   "applications": "*",
+  "dto": "mapstruct",
   "fields": [],
   "name": "RolePermission",
   "relationships": [

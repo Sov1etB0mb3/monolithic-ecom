@@ -14,6 +14,8 @@ import com.calt.burox.domain.Role;
 import com.calt.burox.repository.EntityManager;
 import com.calt.burox.repository.RoleRepository;
 import com.calt.burox.repository.search.RoleSearchRepository;
+import com.calt.burox.service.dto.RoleDTO;
+import com.calt.burox.service.mapper.RoleMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Random;
@@ -56,6 +58,9 @@ class RoleResourceIT {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private RoleMapper roleMapper;
 
     @Autowired
     private RoleSearchRepository roleSearchRepository;
@@ -123,20 +128,22 @@ class RoleResourceIT {
         long databaseSizeBeforeCreate = getRepositoryCount();
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(roleSearchRepository.findAll().collectList().block());
         // Create the Role
-        var returnedRole = webTestClient
+        RoleDTO roleDTO = roleMapper.toDto(role);
+        var returnedRoleDTO = webTestClient
             .post()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(role))
+            .bodyValue(om.writeValueAsBytes(roleDTO))
             .exchange()
             .expectStatus()
             .isCreated()
-            .expectBody(Role.class)
+            .expectBody(RoleDTO.class)
             .returnResult()
             .getResponseBody();
 
         // Validate the Role in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        var returnedRole = roleMapper.toEntity(returnedRoleDTO);
         assertRoleUpdatableFieldsEquals(returnedRole, getPersistedRole(returnedRole));
 
         await()
@@ -153,6 +160,7 @@ class RoleResourceIT {
     void createRoleWithExistingId() throws Exception {
         // Create the Role with an existing ID
         role.setId(1L);
+        RoleDTO roleDTO = roleMapper.toDto(role);
 
         long databaseSizeBeforeCreate = getRepositoryCount();
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(roleSearchRepository.findAll().collectList().block());
@@ -162,7 +170,7 @@ class RoleResourceIT {
             .post()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(role))
+            .bodyValue(om.writeValueAsBytes(roleDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -181,12 +189,13 @@ class RoleResourceIT {
         role.setName(null);
 
         // Create the Role, which fails.
+        RoleDTO roleDTO = roleMapper.toDto(role);
 
         webTestClient
             .post()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(role))
+            .bodyValue(om.writeValueAsBytes(roleDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -269,12 +278,13 @@ class RoleResourceIT {
         // Update the role
         Role updatedRole = roleRepository.findById(role.getId()).block();
         updatedRole.name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
+        RoleDTO roleDTO = roleMapper.toDto(updatedRole);
 
         webTestClient
             .put()
-            .uri(ENTITY_API_URL_ID, updatedRole.getId())
+            .uri(ENTITY_API_URL_ID, roleDTO.getId())
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(updatedRole))
+            .bodyValue(om.writeValueAsBytes(roleDTO))
             .exchange()
             .expectStatus()
             .isOk();
@@ -303,12 +313,15 @@ class RoleResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(roleSearchRepository.findAll().collectList().block());
         role.setId(longCount.incrementAndGet());
 
+        // Create the Role
+        RoleDTO roleDTO = roleMapper.toDto(role);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         webTestClient
             .put()
-            .uri(ENTITY_API_URL_ID, role.getId())
+            .uri(ENTITY_API_URL_ID, roleDTO.getId())
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(role))
+            .bodyValue(om.writeValueAsBytes(roleDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -325,12 +338,15 @@ class RoleResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(roleSearchRepository.findAll().collectList().block());
         role.setId(longCount.incrementAndGet());
 
+        // Create the Role
+        RoleDTO roleDTO = roleMapper.toDto(role);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .put()
             .uri(ENTITY_API_URL_ID, longCount.incrementAndGet())
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(role))
+            .bodyValue(om.writeValueAsBytes(roleDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -347,12 +363,15 @@ class RoleResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(roleSearchRepository.findAll().collectList().block());
         role.setId(longCount.incrementAndGet());
 
+        // Create the Role
+        RoleDTO roleDTO = roleMapper.toDto(role);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .put()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(role))
+            .bodyValue(om.writeValueAsBytes(roleDTO))
             .exchange()
             .expectStatus()
             .isEqualTo(405);
@@ -425,12 +444,15 @@ class RoleResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(roleSearchRepository.findAll().collectList().block());
         role.setId(longCount.incrementAndGet());
 
+        // Create the Role
+        RoleDTO roleDTO = roleMapper.toDto(role);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         webTestClient
             .patch()
-            .uri(ENTITY_API_URL_ID, role.getId())
+            .uri(ENTITY_API_URL_ID, roleDTO.getId())
             .contentType(MediaType.valueOf("application/merge-patch+json"))
-            .bodyValue(om.writeValueAsBytes(role))
+            .bodyValue(om.writeValueAsBytes(roleDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -447,12 +469,15 @@ class RoleResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(roleSearchRepository.findAll().collectList().block());
         role.setId(longCount.incrementAndGet());
 
+        // Create the Role
+        RoleDTO roleDTO = roleMapper.toDto(role);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .patch()
             .uri(ENTITY_API_URL_ID, longCount.incrementAndGet())
             .contentType(MediaType.valueOf("application/merge-patch+json"))
-            .bodyValue(om.writeValueAsBytes(role))
+            .bodyValue(om.writeValueAsBytes(roleDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -469,12 +494,15 @@ class RoleResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(roleSearchRepository.findAll().collectList().block());
         role.setId(longCount.incrementAndGet());
 
+        // Create the Role
+        RoleDTO roleDTO = roleMapper.toDto(role);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .patch()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.valueOf("application/merge-patch+json"))
-            .bodyValue(om.writeValueAsBytes(role))
+            .bodyValue(om.writeValueAsBytes(roleDTO))
             .exchange()
             .expectStatus()
             .isEqualTo(405);

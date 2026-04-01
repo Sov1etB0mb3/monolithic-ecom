@@ -1,8 +1,9 @@
 package com.calt.burox.service;
 
-import com.calt.burox.domain.User;
 import com.calt.burox.repository.UserRepository;
 import com.calt.burox.repository.search.UserSearchRepository;
+import com.calt.burox.service.dto.UserDTO;
+import com.calt.burox.service.mapper.UserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -22,59 +23,51 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    private final UserMapper userMapper;
+
     private final UserSearchRepository userSearchRepository;
 
-    public UserService(UserRepository userRepository, UserSearchRepository userSearchRepository) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, UserSearchRepository userSearchRepository) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
         this.userSearchRepository = userSearchRepository;
     }
 
     /**
      * Save a user.
      *
-     * @param user the entity to save.
+     * @param userDTO the entity to save.
      * @return the persisted entity.
      */
-    public Mono<User> save(User user) {
-        LOG.debug("Request to save User : {}", user);
-        return userRepository.save(user).flatMap(userSearchRepository::save);
+    public Mono<UserDTO> save(UserDTO userDTO) {
+        LOG.debug("Request to save User : {}", userDTO);
+        return userRepository.save(userMapper.toEntity(userDTO)).flatMap(userSearchRepository::save).map(userMapper::toDto);
     }
 
     /**
      * Update a user.
      *
-     * @param user the entity to save.
+     * @param userDTO the entity to save.
      * @return the persisted entity.
      */
-    public Mono<User> update(User user) {
-        LOG.debug("Request to update User : {}", user);
-        return userRepository.save(user).flatMap(userSearchRepository::save);
+    public Mono<UserDTO> update(UserDTO userDTO) {
+        LOG.debug("Request to update User : {}", userDTO);
+        return userRepository.save(userMapper.toEntity(userDTO)).flatMap(userSearchRepository::save).map(userMapper::toDto);
     }
 
     /**
      * Partially update a user.
      *
-     * @param user the entity to update partially.
+     * @param userDTO the entity to update partially.
      * @return the persisted entity.
      */
-    public Mono<User> partialUpdate(User user) {
-        LOG.debug("Request to partially update User : {}", user);
+    public Mono<UserDTO> partialUpdate(UserDTO userDTO) {
+        LOG.debug("Request to partially update User : {}", userDTO);
 
         return userRepository
-            .findById(user.getId())
+            .findById(userDTO.getId())
             .map(existingUser -> {
-                if (user.getUsername() != null) {
-                    existingUser.setUsername(user.getUsername());
-                }
-                if (user.getPassword() != null) {
-                    existingUser.setPassword(user.getPassword());
-                }
-                if (user.getCreatedAt() != null) {
-                    existingUser.setCreatedAt(user.getCreatedAt());
-                }
-                if (user.getUpdatedAt() != null) {
-                    existingUser.setUpdatedAt(user.getUpdatedAt());
-                }
+                userMapper.partialUpdate(existingUser, userDTO);
 
                 return existingUser;
             })
@@ -82,7 +75,8 @@ public class UserService {
             .flatMap(savedUser -> {
                 userSearchRepository.save(savedUser);
                 return Mono.just(savedUser);
-            });
+            })
+            .map(userMapper::toDto);
     }
 
     /**
@@ -92,9 +86,9 @@ public class UserService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Flux<User> findAll(Pageable pageable) {
+    public Flux<UserDTO> findAll(Pageable pageable) {
         LOG.debug("Request to get all Users");
-        return userRepository.findAllBy(pageable);
+        return userRepository.findAllBy(pageable).map(userMapper::toDto);
     }
 
     /**
@@ -121,9 +115,9 @@ public class UserService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Mono<User> findOne(Long id) {
+    public Mono<UserDTO> findOne(Long id) {
         LOG.debug("Request to get User : {}", id);
-        return userRepository.findById(id);
+        return userRepository.findById(id).map(userMapper::toDto);
     }
 
     /**
@@ -145,8 +139,8 @@ public class UserService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Flux<User> search(String query, Pageable pageable) {
+    public Flux<UserDTO> search(String query, Pageable pageable) {
         LOG.debug("Request to search for a page of Users for query {}", query);
-        return userSearchRepository.search(query, pageable);
+        return userSearchRepository.search(query, pageable).map(userMapper::toDto);
     }
 }

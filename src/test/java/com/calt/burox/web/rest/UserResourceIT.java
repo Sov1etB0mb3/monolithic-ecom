@@ -14,6 +14,8 @@ import com.calt.burox.domain.User;
 import com.calt.burox.repository.EntityManager;
 import com.calt.burox.repository.UserRepository;
 import com.calt.burox.repository.search.UserSearchRepository;
+import com.calt.burox.service.dto.UserDTO;
+import com.calt.burox.service.mapper.UserMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -64,6 +66,9 @@ class UserResourceIT {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @Autowired
     private UserSearchRepository userSearchRepository;
@@ -131,20 +136,22 @@ class UserResourceIT {
         long databaseSizeBeforeCreate = getRepositoryCount();
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(userSearchRepository.findAll().collectList().block());
         // Create the User
-        var returnedUser = webTestClient
+        UserDTO userDTO = userMapper.toDto(user);
+        var returnedUserDTO = webTestClient
             .post()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(user))
+            .bodyValue(om.writeValueAsBytes(userDTO))
             .exchange()
             .expectStatus()
             .isCreated()
-            .expectBody(User.class)
+            .expectBody(UserDTO.class)
             .returnResult()
             .getResponseBody();
 
         // Validate the User in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        var returnedUser = userMapper.toEntity(returnedUserDTO);
         assertUserUpdatableFieldsEquals(returnedUser, getPersistedUser(returnedUser));
 
         await()
@@ -161,6 +168,7 @@ class UserResourceIT {
     void createUserWithExistingId() throws Exception {
         // Create the User with an existing ID
         user.setId(1L);
+        UserDTO userDTO = userMapper.toDto(user);
 
         long databaseSizeBeforeCreate = getRepositoryCount();
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(userSearchRepository.findAll().collectList().block());
@@ -170,7 +178,7 @@ class UserResourceIT {
             .post()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(user))
+            .bodyValue(om.writeValueAsBytes(userDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -189,12 +197,13 @@ class UserResourceIT {
         user.setUsername(null);
 
         // Create the User, which fails.
+        UserDTO userDTO = userMapper.toDto(user);
 
         webTestClient
             .post()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(user))
+            .bodyValue(om.writeValueAsBytes(userDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -213,12 +222,13 @@ class UserResourceIT {
         user.setPassword(null);
 
         // Create the User, which fails.
+        UserDTO userDTO = userMapper.toDto(user);
 
         webTestClient
             .post()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(user))
+            .bodyValue(om.writeValueAsBytes(userDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -309,12 +319,13 @@ class UserResourceIT {
         // Update the user
         User updatedUser = userRepository.findById(user.getId()).block();
         updatedUser.username(UPDATED_USERNAME).password(UPDATED_PASSWORD).createdAt(UPDATED_CREATED_AT).updatedAt(UPDATED_UPDATED_AT);
+        UserDTO userDTO = userMapper.toDto(updatedUser);
 
         webTestClient
             .put()
-            .uri(ENTITY_API_URL_ID, updatedUser.getId())
+            .uri(ENTITY_API_URL_ID, userDTO.getId())
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(updatedUser))
+            .bodyValue(om.writeValueAsBytes(userDTO))
             .exchange()
             .expectStatus()
             .isOk();
@@ -343,12 +354,15 @@ class UserResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(userSearchRepository.findAll().collectList().block());
         user.setId(longCount.incrementAndGet());
 
+        // Create the User
+        UserDTO userDTO = userMapper.toDto(user);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         webTestClient
             .put()
-            .uri(ENTITY_API_URL_ID, user.getId())
+            .uri(ENTITY_API_URL_ID, userDTO.getId())
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(user))
+            .bodyValue(om.writeValueAsBytes(userDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -365,12 +379,15 @@ class UserResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(userSearchRepository.findAll().collectList().block());
         user.setId(longCount.incrementAndGet());
 
+        // Create the User
+        UserDTO userDTO = userMapper.toDto(user);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .put()
             .uri(ENTITY_API_URL_ID, longCount.incrementAndGet())
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(user))
+            .bodyValue(om.writeValueAsBytes(userDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -387,12 +404,15 @@ class UserResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(userSearchRepository.findAll().collectList().block());
         user.setId(longCount.incrementAndGet());
 
+        // Create the User
+        UserDTO userDTO = userMapper.toDto(user);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .put()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(user))
+            .bodyValue(om.writeValueAsBytes(userDTO))
             .exchange()
             .expectStatus()
             .isEqualTo(405);
@@ -469,12 +489,15 @@ class UserResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(userSearchRepository.findAll().collectList().block());
         user.setId(longCount.incrementAndGet());
 
+        // Create the User
+        UserDTO userDTO = userMapper.toDto(user);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         webTestClient
             .patch()
-            .uri(ENTITY_API_URL_ID, user.getId())
+            .uri(ENTITY_API_URL_ID, userDTO.getId())
             .contentType(MediaType.valueOf("application/merge-patch+json"))
-            .bodyValue(om.writeValueAsBytes(user))
+            .bodyValue(om.writeValueAsBytes(userDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -491,12 +514,15 @@ class UserResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(userSearchRepository.findAll().collectList().block());
         user.setId(longCount.incrementAndGet());
 
+        // Create the User
+        UserDTO userDTO = userMapper.toDto(user);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .patch()
             .uri(ENTITY_API_URL_ID, longCount.incrementAndGet())
             .contentType(MediaType.valueOf("application/merge-patch+json"))
-            .bodyValue(om.writeValueAsBytes(user))
+            .bodyValue(om.writeValueAsBytes(userDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -513,12 +539,15 @@ class UserResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(userSearchRepository.findAll().collectList().block());
         user.setId(longCount.incrementAndGet());
 
+        // Create the User
+        UserDTO userDTO = userMapper.toDto(user);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .patch()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.valueOf("application/merge-patch+json"))
-            .bodyValue(om.writeValueAsBytes(user))
+            .bodyValue(om.writeValueAsBytes(userDTO))
             .exchange()
             .expectStatus()
             .isEqualTo(405);

@@ -1,8 +1,8 @@
 package com.calt.burox.web.rest;
 
-import com.calt.burox.domain.Permission;
 import com.calt.burox.repository.PermissionRepository;
 import com.calt.burox.service.PermissionService;
+import com.calt.burox.service.dto.PermissionDTO;
 import com.calt.burox.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -55,18 +55,18 @@ public class PermissionResource {
     /**
      * {@code POST  /permissions} : Create a new permission.
      *
-     * @param permission the permission to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new permission, or with status {@code 400 (Bad Request)} if the permission has already an ID.
+     * @param permissionDTO the permissionDTO to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new permissionDTO, or with status {@code 400 (Bad Request)} if the permission has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public Mono<ResponseEntity<Permission>> createPermission(@Valid @RequestBody Permission permission) throws URISyntaxException {
-        LOG.debug("REST request to save Permission : {}", permission);
-        if (permission.getId() != null) {
+    public Mono<ResponseEntity<PermissionDTO>> createPermission(@Valid @RequestBody PermissionDTO permissionDTO) throws URISyntaxException {
+        LOG.debug("REST request to save Permission : {}", permissionDTO);
+        if (permissionDTO.getId() != null) {
             throw new BadRequestAlertException("A new permission cannot already have an ID", ENTITY_NAME, "idexists");
         }
         return permissionService
-            .save(permission)
+            .save(permissionDTO)
             .map(result -> {
                 try {
                     return ResponseEntity.created(new URI("/api/permissions/" + result.getId()))
@@ -81,23 +81,23 @@ public class PermissionResource {
     /**
      * {@code PUT  /permissions/:id} : Updates an existing permission.
      *
-     * @param id the id of the permission to save.
-     * @param permission the permission to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated permission,
-     * or with status {@code 400 (Bad Request)} if the permission is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the permission couldn't be updated.
+     * @param id the id of the permissionDTO to save.
+     * @param permissionDTO the permissionDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated permissionDTO,
+     * or with status {@code 400 (Bad Request)} if the permissionDTO is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the permissionDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
-    public Mono<ResponseEntity<Permission>> updatePermission(
+    public Mono<ResponseEntity<PermissionDTO>> updatePermission(
         @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody Permission permission
+        @Valid @RequestBody PermissionDTO permissionDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to update Permission : {}, {}", id, permission);
-        if (permission.getId() == null) {
+        LOG.debug("REST request to update Permission : {}, {}", id, permissionDTO);
+        if (permissionDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, permission.getId())) {
+        if (!Objects.equals(id, permissionDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -109,7 +109,7 @@ public class PermissionResource {
                 }
 
                 return permissionService
-                    .update(permission)
+                    .update(permissionDTO)
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                     .map(result ->
                         ResponseEntity.ok()
@@ -122,24 +122,24 @@ public class PermissionResource {
     /**
      * {@code PATCH  /permissions/:id} : Partial updates given fields of an existing permission, field will ignore if it is null
      *
-     * @param id the id of the permission to save.
-     * @param permission the permission to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated permission,
-     * or with status {@code 400 (Bad Request)} if the permission is not valid,
-     * or with status {@code 404 (Not Found)} if the permission is not found,
-     * or with status {@code 500 (Internal Server Error)} if the permission couldn't be updated.
+     * @param id the id of the permissionDTO to save.
+     * @param permissionDTO the permissionDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated permissionDTO,
+     * or with status {@code 400 (Bad Request)} if the permissionDTO is not valid,
+     * or with status {@code 404 (Not Found)} if the permissionDTO is not found,
+     * or with status {@code 500 (Internal Server Error)} if the permissionDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public Mono<ResponseEntity<Permission>> partialUpdatePermission(
+    public Mono<ResponseEntity<PermissionDTO>> partialUpdatePermission(
         @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody Permission permission
+        @NotNull @RequestBody PermissionDTO permissionDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update Permission partially : {}, {}", id, permission);
-        if (permission.getId() == null) {
+        LOG.debug("REST request to partial update Permission partially : {}, {}", id, permissionDTO);
+        if (permissionDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, permission.getId())) {
+        if (!Objects.equals(id, permissionDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -150,7 +150,7 @@ public class PermissionResource {
                     return Mono.error(new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound"));
                 }
 
-                Mono<Permission> result = permissionService.partialUpdate(permission);
+                Mono<PermissionDTO> result = permissionService.partialUpdate(permissionDTO);
 
                 return result
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
@@ -170,7 +170,7 @@ public class PermissionResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of permissions in body.
      */
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<List<Permission>>> getAllPermissions(
+    public Mono<ResponseEntity<List<PermissionDTO>>> getAllPermissions(
         @org.springdoc.core.annotations.ParameterObject Pageable pageable,
         ServerHttpRequest request
     ) {
@@ -193,20 +193,20 @@ public class PermissionResource {
     /**
      * {@code GET  /permissions/:id} : get the "id" permission.
      *
-     * @param id the id of the permission to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the permission, or with status {@code 404 (Not Found)}.
+     * @param id the id of the permissionDTO to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the permissionDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public Mono<ResponseEntity<Permission>> getPermission(@PathVariable("id") Long id) {
+    public Mono<ResponseEntity<PermissionDTO>> getPermission(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Permission : {}", id);
-        Mono<Permission> permission = permissionService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(permission);
+        Mono<PermissionDTO> permissionDTO = permissionService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(permissionDTO);
     }
 
     /**
      * {@code DELETE  /permissions/:id} : delete the "id" permission.
      *
-     * @param id the id of the permission to delete.
+     * @param id the id of the permissionDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
@@ -233,7 +233,7 @@ public class PermissionResource {
      * @return the result of the search.
      */
     @GetMapping("/_search")
-    public Mono<ResponseEntity<Flux<Permission>>> searchPermissions(
+    public Mono<ResponseEntity<Flux<PermissionDTO>>> searchPermissions(
         @RequestParam("query") String query,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable,
         ServerHttpRequest request

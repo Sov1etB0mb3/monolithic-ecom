@@ -3,8 +3,8 @@ import { IRole } from 'app/entities/role/role.model';
 
 export interface IUserRole {
   id: number;
-  user?: IUser | null;
-  role?: IRole | null;
+  user?: Pick<IUser, 'id'> | null;
+  role?: Pick<IRole, 'id'> | null;
 }
 
 export type NewUserRole = Omit<IUserRole, 'id'> & { id: null };

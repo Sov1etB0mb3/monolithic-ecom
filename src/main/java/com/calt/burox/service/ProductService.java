@@ -1,8 +1,9 @@
 package com.calt.burox.service;
 
-import com.calt.burox.domain.Product;
 import com.calt.burox.repository.ProductRepository;
 import com.calt.burox.repository.search.ProductSearchRepository;
+import com.calt.burox.service.dto.ProductDTO;
+import com.calt.burox.service.mapper.ProductMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -22,62 +23,55 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
+    private final ProductMapper productMapper;
+
     private final ProductSearchRepository productSearchRepository;
 
-    public ProductService(ProductRepository productRepository, ProductSearchRepository productSearchRepository) {
+    public ProductService(
+        ProductRepository productRepository,
+        ProductMapper productMapper,
+        ProductSearchRepository productSearchRepository
+    ) {
         this.productRepository = productRepository;
+        this.productMapper = productMapper;
         this.productSearchRepository = productSearchRepository;
     }
 
     /**
      * Save a product.
      *
-     * @param product the entity to save.
+     * @param productDTO the entity to save.
      * @return the persisted entity.
      */
-    public Mono<Product> save(Product product) {
-        LOG.debug("Request to save Product : {}", product);
-        return productRepository.save(product).flatMap(productSearchRepository::save);
+    public Mono<ProductDTO> save(ProductDTO productDTO) {
+        LOG.debug("Request to save Product : {}", productDTO);
+        return productRepository.save(productMapper.toEntity(productDTO)).flatMap(productSearchRepository::save).map(productMapper::toDto);
     }
 
     /**
      * Update a product.
      *
-     * @param product the entity to save.
+     * @param productDTO the entity to save.
      * @return the persisted entity.
      */
-    public Mono<Product> update(Product product) {
-        LOG.debug("Request to update Product : {}", product);
-        return productRepository.save(product).flatMap(productSearchRepository::save);
+    public Mono<ProductDTO> update(ProductDTO productDTO) {
+        LOG.debug("Request to update Product : {}", productDTO);
+        return productRepository.save(productMapper.toEntity(productDTO)).flatMap(productSearchRepository::save).map(productMapper::toDto);
     }
 
     /**
      * Partially update a product.
      *
-     * @param product the entity to update partially.
+     * @param productDTO the entity to update partially.
      * @return the persisted entity.
      */
-    public Mono<Product> partialUpdate(Product product) {
-        LOG.debug("Request to partially update Product : {}", product);
+    public Mono<ProductDTO> partialUpdate(ProductDTO productDTO) {
+        LOG.debug("Request to partially update Product : {}", productDTO);
 
         return productRepository
-            .findById(product.getId())
+            .findById(productDTO.getId())
             .map(existingProduct -> {
-                if (product.getName() != null) {
-                    existingProduct.setName(product.getName());
-                }
-                if (product.getQuantity() != null) {
-                    existingProduct.setQuantity(product.getQuantity());
-                }
-                if (product.getPrice() != null) {
-                    existingProduct.setPrice(product.getPrice());
-                }
-                if (product.getCreatedAt() != null) {
-                    existingProduct.setCreatedAt(product.getCreatedAt());
-                }
-                if (product.getUpdatedAt() != null) {
-                    existingProduct.setUpdatedAt(product.getUpdatedAt());
-                }
+                productMapper.partialUpdate(existingProduct, productDTO);
 
                 return existingProduct;
             })
@@ -85,7 +79,8 @@ public class ProductService {
             .flatMap(savedProduct -> {
                 productSearchRepository.save(savedProduct);
                 return Mono.just(savedProduct);
-            });
+            })
+            .map(productMapper::toDto);
     }
 
     /**
@@ -95,9 +90,9 @@ public class ProductService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Flux<Product> findAll(Pageable pageable) {
+    public Flux<ProductDTO> findAll(Pageable pageable) {
         LOG.debug("Request to get all Products");
-        return productRepository.findAllBy(pageable);
+        return productRepository.findAllBy(pageable).map(productMapper::toDto);
     }
 
     /**
@@ -124,9 +119,9 @@ public class ProductService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Mono<Product> findOne(Long id) {
+    public Mono<ProductDTO> findOne(Long id) {
         LOG.debug("Request to get Product : {}", id);
-        return productRepository.findById(id);
+        return productRepository.findById(id).map(productMapper::toDto);
     }
 
     /**
@@ -148,8 +143,8 @@ public class ProductService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Flux<Product> search(String query, Pageable pageable) {
+    public Flux<ProductDTO> search(String query, Pageable pageable) {
         LOG.debug("Request to search for a page of Products for query {}", query);
-        return productSearchRepository.search(query, pageable);
+        return productSearchRepository.search(query, pageable).map(productMapper::toDto);
     }
 }

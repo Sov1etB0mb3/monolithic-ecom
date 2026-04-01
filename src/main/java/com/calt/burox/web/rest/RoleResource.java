@@ -1,8 +1,8 @@
 package com.calt.burox.web.rest;
 
-import com.calt.burox.domain.Role;
 import com.calt.burox.repository.RoleRepository;
 import com.calt.burox.service.RoleService;
+import com.calt.burox.service.dto.RoleDTO;
 import com.calt.burox.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -55,18 +55,18 @@ public class RoleResource {
     /**
      * {@code POST  /roles} : Create a new role.
      *
-     * @param role the role to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new role, or with status {@code 400 (Bad Request)} if the role has already an ID.
+     * @param roleDTO the roleDTO to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new roleDTO, or with status {@code 400 (Bad Request)} if the role has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public Mono<ResponseEntity<Role>> createRole(@Valid @RequestBody Role role) throws URISyntaxException {
-        LOG.debug("REST request to save Role : {}", role);
-        if (role.getId() != null) {
+    public Mono<ResponseEntity<RoleDTO>> createRole(@Valid @RequestBody RoleDTO roleDTO) throws URISyntaxException {
+        LOG.debug("REST request to save Role : {}", roleDTO);
+        if (roleDTO.getId() != null) {
             throw new BadRequestAlertException("A new role cannot already have an ID", ENTITY_NAME, "idexists");
         }
         return roleService
-            .save(role)
+            .save(roleDTO)
             .map(result -> {
                 try {
                     return ResponseEntity.created(new URI("/api/roles/" + result.getId()))
@@ -81,23 +81,23 @@ public class RoleResource {
     /**
      * {@code PUT  /roles/:id} : Updates an existing role.
      *
-     * @param id the id of the role to save.
-     * @param role the role to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated role,
-     * or with status {@code 400 (Bad Request)} if the role is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the role couldn't be updated.
+     * @param id the id of the roleDTO to save.
+     * @param roleDTO the roleDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated roleDTO,
+     * or with status {@code 400 (Bad Request)} if the roleDTO is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the roleDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
-    public Mono<ResponseEntity<Role>> updateRole(
+    public Mono<ResponseEntity<RoleDTO>> updateRole(
         @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody Role role
+        @Valid @RequestBody RoleDTO roleDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to update Role : {}, {}", id, role);
-        if (role.getId() == null) {
+        LOG.debug("REST request to update Role : {}, {}", id, roleDTO);
+        if (roleDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, role.getId())) {
+        if (!Objects.equals(id, roleDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -109,7 +109,7 @@ public class RoleResource {
                 }
 
                 return roleService
-                    .update(role)
+                    .update(roleDTO)
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                     .map(result ->
                         ResponseEntity.ok()
@@ -122,24 +122,24 @@ public class RoleResource {
     /**
      * {@code PATCH  /roles/:id} : Partial updates given fields of an existing role, field will ignore if it is null
      *
-     * @param id the id of the role to save.
-     * @param role the role to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated role,
-     * or with status {@code 400 (Bad Request)} if the role is not valid,
-     * or with status {@code 404 (Not Found)} if the role is not found,
-     * or with status {@code 500 (Internal Server Error)} if the role couldn't be updated.
+     * @param id the id of the roleDTO to save.
+     * @param roleDTO the roleDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated roleDTO,
+     * or with status {@code 400 (Bad Request)} if the roleDTO is not valid,
+     * or with status {@code 404 (Not Found)} if the roleDTO is not found,
+     * or with status {@code 500 (Internal Server Error)} if the roleDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public Mono<ResponseEntity<Role>> partialUpdateRole(
+    public Mono<ResponseEntity<RoleDTO>> partialUpdateRole(
         @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody Role role
+        @NotNull @RequestBody RoleDTO roleDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update Role partially : {}, {}", id, role);
-        if (role.getId() == null) {
+        LOG.debug("REST request to partial update Role partially : {}, {}", id, roleDTO);
+        if (roleDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, role.getId())) {
+        if (!Objects.equals(id, roleDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -150,7 +150,7 @@ public class RoleResource {
                     return Mono.error(new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound"));
                 }
 
-                Mono<Role> result = roleService.partialUpdate(role);
+                Mono<RoleDTO> result = roleService.partialUpdate(roleDTO);
 
                 return result
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
@@ -170,7 +170,7 @@ public class RoleResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of roles in body.
      */
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<List<Role>>> getAllRoles(
+    public Mono<ResponseEntity<List<RoleDTO>>> getAllRoles(
         @org.springdoc.core.annotations.ParameterObject Pageable pageable,
         ServerHttpRequest request
     ) {
@@ -193,20 +193,20 @@ public class RoleResource {
     /**
      * {@code GET  /roles/:id} : get the "id" role.
      *
-     * @param id the id of the role to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the role, or with status {@code 404 (Not Found)}.
+     * @param id the id of the roleDTO to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the roleDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public Mono<ResponseEntity<Role>> getRole(@PathVariable("id") Long id) {
+    public Mono<ResponseEntity<RoleDTO>> getRole(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Role : {}", id);
-        Mono<Role> role = roleService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(role);
+        Mono<RoleDTO> roleDTO = roleService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(roleDTO);
     }
 
     /**
      * {@code DELETE  /roles/:id} : delete the "id" role.
      *
-     * @param id the id of the role to delete.
+     * @param id the id of the roleDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
@@ -233,7 +233,7 @@ public class RoleResource {
      * @return the result of the search.
      */
     @GetMapping("/_search")
-    public Mono<ResponseEntity<Flux<Role>>> searchRoles(
+    public Mono<ResponseEntity<Flux<RoleDTO>>> searchRoles(
         @RequestParam("query") String query,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable,
         ServerHttpRequest request

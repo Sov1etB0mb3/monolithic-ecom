@@ -1,8 +1,8 @@
 package com.calt.burox.web.rest;
 
-import com.calt.burox.domain.User;
 import com.calt.burox.repository.UserRepository;
 import com.calt.burox.service.UserService;
+import com.calt.burox.service.dto.UserDTO;
 import com.calt.burox.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -55,18 +55,18 @@ public class UserResource {
     /**
      * {@code POST  /users} : Create a new user.
      *
-     * @param user the user to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
+     * @param userDTO the userDTO to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new userDTO, or with status {@code 400 (Bad Request)} if the user has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public Mono<ResponseEntity<User>> createUser(@Valid @RequestBody User user) throws URISyntaxException {
-        LOG.debug("REST request to save User : {}", user);
-        if (user.getId() != null) {
+    public Mono<ResponseEntity<UserDTO>> createUser(@Valid @RequestBody UserDTO userDTO) throws URISyntaxException {
+        LOG.debug("REST request to save User : {}", userDTO);
+        if (userDTO.getId() != null) {
             throw new BadRequestAlertException("A new user cannot already have an ID", ENTITY_NAME, "idexists");
         }
         return userService
-            .save(user)
+            .save(userDTO)
             .map(result -> {
                 try {
                     return ResponseEntity.created(new URI("/api/users/" + result.getId()))
@@ -81,23 +81,23 @@ public class UserResource {
     /**
      * {@code PUT  /users/:id} : Updates an existing user.
      *
-     * @param id the id of the user to save.
-     * @param user the user to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated user,
-     * or with status {@code 400 (Bad Request)} if the user is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the user couldn't be updated.
+     * @param id the id of the userDTO to save.
+     * @param userDTO the userDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated userDTO,
+     * or with status {@code 400 (Bad Request)} if the userDTO is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the userDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
-    public Mono<ResponseEntity<User>> updateUser(
+    public Mono<ResponseEntity<UserDTO>> updateUser(
         @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody User user
+        @Valid @RequestBody UserDTO userDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to update User : {}, {}", id, user);
-        if (user.getId() == null) {
+        LOG.debug("REST request to update User : {}, {}", id, userDTO);
+        if (userDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, user.getId())) {
+        if (!Objects.equals(id, userDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -109,7 +109,7 @@ public class UserResource {
                 }
 
                 return userService
-                    .update(user)
+                    .update(userDTO)
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                     .map(result ->
                         ResponseEntity.ok()
@@ -122,24 +122,24 @@ public class UserResource {
     /**
      * {@code PATCH  /users/:id} : Partial updates given fields of an existing user, field will ignore if it is null
      *
-     * @param id the id of the user to save.
-     * @param user the user to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated user,
-     * or with status {@code 400 (Bad Request)} if the user is not valid,
-     * or with status {@code 404 (Not Found)} if the user is not found,
-     * or with status {@code 500 (Internal Server Error)} if the user couldn't be updated.
+     * @param id the id of the userDTO to save.
+     * @param userDTO the userDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated userDTO,
+     * or with status {@code 400 (Bad Request)} if the userDTO is not valid,
+     * or with status {@code 404 (Not Found)} if the userDTO is not found,
+     * or with status {@code 500 (Internal Server Error)} if the userDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public Mono<ResponseEntity<User>> partialUpdateUser(
+    public Mono<ResponseEntity<UserDTO>> partialUpdateUser(
         @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody User user
+        @NotNull @RequestBody UserDTO userDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update User partially : {}, {}", id, user);
-        if (user.getId() == null) {
+        LOG.debug("REST request to partial update User partially : {}, {}", id, userDTO);
+        if (userDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, user.getId())) {
+        if (!Objects.equals(id, userDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -150,7 +150,7 @@ public class UserResource {
                     return Mono.error(new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound"));
                 }
 
-                Mono<User> result = userService.partialUpdate(user);
+                Mono<UserDTO> result = userService.partialUpdate(userDTO);
 
                 return result
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
@@ -170,7 +170,7 @@ public class UserResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of users in body.
      */
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<List<User>>> getAllUsers(
+    public Mono<ResponseEntity<List<UserDTO>>> getAllUsers(
         @org.springdoc.core.annotations.ParameterObject Pageable pageable,
         ServerHttpRequest request
     ) {
@@ -193,20 +193,20 @@ public class UserResource {
     /**
      * {@code GET  /users/:id} : get the "id" user.
      *
-     * @param id the id of the user to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the user, or with status {@code 404 (Not Found)}.
+     * @param id the id of the userDTO to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the userDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public Mono<ResponseEntity<User>> getUser(@PathVariable("id") Long id) {
+    public Mono<ResponseEntity<UserDTO>> getUser(@PathVariable("id") Long id) {
         LOG.debug("REST request to get User : {}", id);
-        Mono<User> user = userService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(user);
+        Mono<UserDTO> userDTO = userService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(userDTO);
     }
 
     /**
      * {@code DELETE  /users/:id} : delete the "id" user.
      *
-     * @param id the id of the user to delete.
+     * @param id the id of the userDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
@@ -233,7 +233,7 @@ public class UserResource {
      * @return the result of the search.
      */
     @GetMapping("/_search")
-    public Mono<ResponseEntity<Flux<User>>> searchUsers(
+    public Mono<ResponseEntity<Flux<UserDTO>>> searchUsers(
         @RequestParam("query") String query,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable,
         ServerHttpRequest request

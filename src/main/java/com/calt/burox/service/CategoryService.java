@@ -1,8 +1,9 @@
 package com.calt.burox.service;
 
-import com.calt.burox.domain.Category;
 import com.calt.burox.repository.CategoryRepository;
 import com.calt.burox.repository.search.CategorySearchRepository;
+import com.calt.burox.service.dto.CategoryDTO;
+import com.calt.burox.service.mapper.CategoryMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -22,59 +23,61 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
+    private final CategoryMapper categoryMapper;
+
     private final CategorySearchRepository categorySearchRepository;
 
-    public CategoryService(CategoryRepository categoryRepository, CategorySearchRepository categorySearchRepository) {
+    public CategoryService(
+        CategoryRepository categoryRepository,
+        CategoryMapper categoryMapper,
+        CategorySearchRepository categorySearchRepository
+    ) {
         this.categoryRepository = categoryRepository;
+        this.categoryMapper = categoryMapper;
         this.categorySearchRepository = categorySearchRepository;
     }
 
     /**
      * Save a category.
      *
-     * @param category the entity to save.
+     * @param categoryDTO the entity to save.
      * @return the persisted entity.
      */
-    public Mono<Category> save(Category category) {
-        LOG.debug("Request to save Category : {}", category);
-        return categoryRepository.save(category).flatMap(categorySearchRepository::save);
+    public Mono<CategoryDTO> save(CategoryDTO categoryDTO) {
+        LOG.debug("Request to save Category : {}", categoryDTO);
+        return categoryRepository
+            .save(categoryMapper.toEntity(categoryDTO))
+            .flatMap(categorySearchRepository::save)
+            .map(categoryMapper::toDto);
     }
 
     /**
      * Update a category.
      *
-     * @param category the entity to save.
+     * @param categoryDTO the entity to save.
      * @return the persisted entity.
      */
-    public Mono<Category> update(Category category) {
-        LOG.debug("Request to update Category : {}", category);
-        return categoryRepository.save(category).flatMap(categorySearchRepository::save);
+    public Mono<CategoryDTO> update(CategoryDTO categoryDTO) {
+        LOG.debug("Request to update Category : {}", categoryDTO);
+        return categoryRepository
+            .save(categoryMapper.toEntity(categoryDTO))
+            .flatMap(categorySearchRepository::save)
+            .map(categoryMapper::toDto);
     }
 
     /**
      * Partially update a category.
      *
-     * @param category the entity to update partially.
+     * @param categoryDTO the entity to update partially.
      * @return the persisted entity.
      */
-    public Mono<Category> partialUpdate(Category category) {
-        LOG.debug("Request to partially update Category : {}", category);
+    public Mono<CategoryDTO> partialUpdate(CategoryDTO categoryDTO) {
+        LOG.debug("Request to partially update Category : {}", categoryDTO);
 
         return categoryRepository
-            .findById(category.getId())
+            .findById(categoryDTO.getId())
             .map(existingCategory -> {
-                if (category.getName() != null) {
-                    existingCategory.setName(category.getName());
-                }
-                if (category.getDescription() != null) {
-                    existingCategory.setDescription(category.getDescription());
-                }
-                if (category.getCreatedAt() != null) {
-                    existingCategory.setCreatedAt(category.getCreatedAt());
-                }
-                if (category.getUpdatedAt() != null) {
-                    existingCategory.setUpdatedAt(category.getUpdatedAt());
-                }
+                categoryMapper.partialUpdate(existingCategory, categoryDTO);
 
                 return existingCategory;
             })
@@ -82,7 +85,8 @@ public class CategoryService {
             .flatMap(savedCategory -> {
                 categorySearchRepository.save(savedCategory);
                 return Mono.just(savedCategory);
-            });
+            })
+            .map(categoryMapper::toDto);
     }
 
     /**
@@ -92,9 +96,9 @@ public class CategoryService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Flux<Category> findAll(Pageable pageable) {
+    public Flux<CategoryDTO> findAll(Pageable pageable) {
         LOG.debug("Request to get all Categories");
-        return categoryRepository.findAllBy(pageable);
+        return categoryRepository.findAllBy(pageable).map(categoryMapper::toDto);
     }
 
     /**
@@ -121,9 +125,9 @@ public class CategoryService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Mono<Category> findOne(Long id) {
+    public Mono<CategoryDTO> findOne(Long id) {
         LOG.debug("Request to get Category : {}", id);
-        return categoryRepository.findById(id);
+        return categoryRepository.findById(id).map(categoryMapper::toDto);
     }
 
     /**
@@ -145,8 +149,8 @@ public class CategoryService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Flux<Category> search(String query, Pageable pageable) {
+    public Flux<CategoryDTO> search(String query, Pageable pageable) {
         LOG.debug("Request to search for a page of Categories for query {}", query);
-        return categorySearchRepository.search(query, pageable);
+        return categorySearchRepository.search(query, pageable).map(categoryMapper::toDto);
     }
 }

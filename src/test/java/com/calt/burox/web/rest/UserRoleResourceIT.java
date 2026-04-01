@@ -16,6 +16,8 @@ import com.calt.burox.domain.UserRole;
 import com.calt.burox.repository.EntityManager;
 import com.calt.burox.repository.UserRoleRepository;
 import com.calt.burox.repository.search.UserRoleSearchRepository;
+import com.calt.burox.service.dto.UserRoleDTO;
+import com.calt.burox.service.mapper.UserRoleMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.util.List;
@@ -53,6 +55,9 @@ class UserRoleResourceIT {
 
     @Autowired
     private UserRoleRepository userRoleRepository;
+
+    @Autowired
+    private UserRoleMapper userRoleMapper;
 
     @Autowired
     private UserRoleSearchRepository userRoleSearchRepository;
@@ -138,20 +143,22 @@ class UserRoleResourceIT {
         long databaseSizeBeforeCreate = getRepositoryCount();
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(userRoleSearchRepository.findAll().collectList().block());
         // Create the UserRole
-        var returnedUserRole = webTestClient
+        UserRoleDTO userRoleDTO = userRoleMapper.toDto(userRole);
+        var returnedUserRoleDTO = webTestClient
             .post()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(userRole))
+            .bodyValue(om.writeValueAsBytes(userRoleDTO))
             .exchange()
             .expectStatus()
             .isCreated()
-            .expectBody(UserRole.class)
+            .expectBody(UserRoleDTO.class)
             .returnResult()
             .getResponseBody();
 
         // Validate the UserRole in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        var returnedUserRole = userRoleMapper.toEntity(returnedUserRoleDTO);
         assertUserRoleUpdatableFieldsEquals(returnedUserRole, getPersistedUserRole(returnedUserRole));
 
         await()
@@ -168,6 +175,7 @@ class UserRoleResourceIT {
     void createUserRoleWithExistingId() throws Exception {
         // Create the UserRole with an existing ID
         userRole.setId(1L);
+        UserRoleDTO userRoleDTO = userRoleMapper.toDto(userRole);
 
         long databaseSizeBeforeCreate = getRepositoryCount();
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(userRoleSearchRepository.findAll().collectList().block());
@@ -177,7 +185,7 @@ class UserRoleResourceIT {
             .post()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(userRole))
+            .bodyValue(om.writeValueAsBytes(userRoleDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -202,8 +210,9 @@ class UserRoleResourceIT {
             .isOk()
             .expectHeader()
             .contentTypeCompatibleWith(MediaType.APPLICATION_NDJSON)
-            .returnResult(UserRole.class)
+            .returnResult(UserRoleDTO.class)
             .getResponseBody()
+            .map(userRoleMapper::toEntity)
             .filter(userRole::equals)
             .collectList()
             .block(Duration.ofSeconds(5));
@@ -280,12 +289,13 @@ class UserRoleResourceIT {
 
         // Update the userRole
         UserRole updatedUserRole = userRoleRepository.findById(userRole.getId()).block();
+        UserRoleDTO userRoleDTO = userRoleMapper.toDto(updatedUserRole);
 
         webTestClient
             .put()
-            .uri(ENTITY_API_URL_ID, updatedUserRole.getId())
+            .uri(ENTITY_API_URL_ID, userRoleDTO.getId())
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(updatedUserRole))
+            .bodyValue(om.writeValueAsBytes(userRoleDTO))
             .exchange()
             .expectStatus()
             .isOk();
@@ -314,12 +324,15 @@ class UserRoleResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(userRoleSearchRepository.findAll().collectList().block());
         userRole.setId(longCount.incrementAndGet());
 
+        // Create the UserRole
+        UserRoleDTO userRoleDTO = userRoleMapper.toDto(userRole);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         webTestClient
             .put()
-            .uri(ENTITY_API_URL_ID, userRole.getId())
+            .uri(ENTITY_API_URL_ID, userRoleDTO.getId())
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(userRole))
+            .bodyValue(om.writeValueAsBytes(userRoleDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -336,12 +349,15 @@ class UserRoleResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(userRoleSearchRepository.findAll().collectList().block());
         userRole.setId(longCount.incrementAndGet());
 
+        // Create the UserRole
+        UserRoleDTO userRoleDTO = userRoleMapper.toDto(userRole);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .put()
             .uri(ENTITY_API_URL_ID, longCount.incrementAndGet())
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(userRole))
+            .bodyValue(om.writeValueAsBytes(userRoleDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -358,12 +374,15 @@ class UserRoleResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(userRoleSearchRepository.findAll().collectList().block());
         userRole.setId(longCount.incrementAndGet());
 
+        // Create the UserRole
+        UserRoleDTO userRoleDTO = userRoleMapper.toDto(userRole);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .put()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(userRole))
+            .bodyValue(om.writeValueAsBytes(userRoleDTO))
             .exchange()
             .expectStatus()
             .isEqualTo(405);
@@ -432,12 +451,15 @@ class UserRoleResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(userRoleSearchRepository.findAll().collectList().block());
         userRole.setId(longCount.incrementAndGet());
 
+        // Create the UserRole
+        UserRoleDTO userRoleDTO = userRoleMapper.toDto(userRole);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         webTestClient
             .patch()
-            .uri(ENTITY_API_URL_ID, userRole.getId())
+            .uri(ENTITY_API_URL_ID, userRoleDTO.getId())
             .contentType(MediaType.valueOf("application/merge-patch+json"))
-            .bodyValue(om.writeValueAsBytes(userRole))
+            .bodyValue(om.writeValueAsBytes(userRoleDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -454,12 +476,15 @@ class UserRoleResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(userRoleSearchRepository.findAll().collectList().block());
         userRole.setId(longCount.incrementAndGet());
 
+        // Create the UserRole
+        UserRoleDTO userRoleDTO = userRoleMapper.toDto(userRole);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .patch()
             .uri(ENTITY_API_URL_ID, longCount.incrementAndGet())
             .contentType(MediaType.valueOf("application/merge-patch+json"))
-            .bodyValue(om.writeValueAsBytes(userRole))
+            .bodyValue(om.writeValueAsBytes(userRoleDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -476,12 +501,15 @@ class UserRoleResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(userRoleSearchRepository.findAll().collectList().block());
         userRole.setId(longCount.incrementAndGet());
 
+        // Create the UserRole
+        UserRoleDTO userRoleDTO = userRoleMapper.toDto(userRole);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .patch()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.valueOf("application/merge-patch+json"))
-            .bodyValue(om.writeValueAsBytes(userRole))
+            .bodyValue(om.writeValueAsBytes(userRoleDTO))
             .exchange()
             .expectStatus()
             .isEqualTo(405);

@@ -1,8 +1,8 @@
 package com.calt.burox.web.rest;
 
-import com.calt.burox.domain.RolePermission;
 import com.calt.burox.repository.RolePermissionRepository;
 import com.calt.burox.service.RolePermissionService;
+import com.calt.burox.service.dto.RolePermissionDTO;
 import com.calt.burox.web.rest.errors.BadRequestAlertException;
 import com.calt.burox.web.rest.errors.ElasticsearchExceptionMapper;
 import jakarta.validation.Valid;
@@ -50,19 +50,19 @@ public class RolePermissionResource {
     /**
      * {@code POST  /role-permissions} : Create a new rolePermission.
      *
-     * @param rolePermission the rolePermission to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new rolePermission, or with status {@code 400 (Bad Request)} if the rolePermission has already an ID.
+     * @param rolePermissionDTO the rolePermissionDTO to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new rolePermissionDTO, or with status {@code 400 (Bad Request)} if the rolePermission has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public Mono<ResponseEntity<RolePermission>> createRolePermission(@Valid @RequestBody RolePermission rolePermission)
+    public Mono<ResponseEntity<RolePermissionDTO>> createRolePermission(@Valid @RequestBody RolePermissionDTO rolePermissionDTO)
         throws URISyntaxException {
-        LOG.debug("REST request to save RolePermission : {}", rolePermission);
-        if (rolePermission.getId() != null) {
+        LOG.debug("REST request to save RolePermission : {}", rolePermissionDTO);
+        if (rolePermissionDTO.getId() != null) {
             throw new BadRequestAlertException("A new rolePermission cannot already have an ID", ENTITY_NAME, "idexists");
         }
         return rolePermissionService
-            .save(rolePermission)
+            .save(rolePermissionDTO)
             .map(result -> {
                 try {
                     return ResponseEntity.created(new URI("/api/role-permissions/" + result.getId()))
@@ -77,23 +77,23 @@ public class RolePermissionResource {
     /**
      * {@code PUT  /role-permissions/:id} : Updates an existing rolePermission.
      *
-     * @param id the id of the rolePermission to save.
-     * @param rolePermission the rolePermission to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated rolePermission,
-     * or with status {@code 400 (Bad Request)} if the rolePermission is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the rolePermission couldn't be updated.
+     * @param id the id of the rolePermissionDTO to save.
+     * @param rolePermissionDTO the rolePermissionDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated rolePermissionDTO,
+     * or with status {@code 400 (Bad Request)} if the rolePermissionDTO is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the rolePermissionDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
-    public Mono<ResponseEntity<RolePermission>> updateRolePermission(
+    public Mono<ResponseEntity<RolePermissionDTO>> updateRolePermission(
         @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody RolePermission rolePermission
+        @Valid @RequestBody RolePermissionDTO rolePermissionDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to update RolePermission : {}, {}", id, rolePermission);
-        if (rolePermission.getId() == null) {
+        LOG.debug("REST request to update RolePermission : {}, {}", id, rolePermissionDTO);
+        if (rolePermissionDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, rolePermission.getId())) {
+        if (!Objects.equals(id, rolePermissionDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -105,7 +105,7 @@ public class RolePermissionResource {
                 }
 
                 return rolePermissionService
-                    .update(rolePermission)
+                    .update(rolePermissionDTO)
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                     .map(result ->
                         ResponseEntity.ok()
@@ -118,24 +118,24 @@ public class RolePermissionResource {
     /**
      * {@code PATCH  /role-permissions/:id} : Partial updates given fields of an existing rolePermission, field will ignore if it is null
      *
-     * @param id the id of the rolePermission to save.
-     * @param rolePermission the rolePermission to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated rolePermission,
-     * or with status {@code 400 (Bad Request)} if the rolePermission is not valid,
-     * or with status {@code 404 (Not Found)} if the rolePermission is not found,
-     * or with status {@code 500 (Internal Server Error)} if the rolePermission couldn't be updated.
+     * @param id the id of the rolePermissionDTO to save.
+     * @param rolePermissionDTO the rolePermissionDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated rolePermissionDTO,
+     * or with status {@code 400 (Bad Request)} if the rolePermissionDTO is not valid,
+     * or with status {@code 404 (Not Found)} if the rolePermissionDTO is not found,
+     * or with status {@code 500 (Internal Server Error)} if the rolePermissionDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public Mono<ResponseEntity<RolePermission>> partialUpdateRolePermission(
+    public Mono<ResponseEntity<RolePermissionDTO>> partialUpdateRolePermission(
         @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody RolePermission rolePermission
+        @NotNull @RequestBody RolePermissionDTO rolePermissionDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update RolePermission partially : {}, {}", id, rolePermission);
-        if (rolePermission.getId() == null) {
+        LOG.debug("REST request to partial update RolePermission partially : {}, {}", id, rolePermissionDTO);
+        if (rolePermissionDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, rolePermission.getId())) {
+        if (!Objects.equals(id, rolePermissionDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -146,7 +146,7 @@ public class RolePermissionResource {
                     return Mono.error(new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound"));
                 }
 
-                Mono<RolePermission> result = rolePermissionService.partialUpdate(rolePermission);
+                Mono<RolePermissionDTO> result = rolePermissionService.partialUpdate(rolePermissionDTO);
 
                 return result
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
@@ -164,7 +164,7 @@ public class RolePermissionResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of rolePermissions in body.
      */
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<List<RolePermission>> getAllRolePermissions() {
+    public Mono<List<RolePermissionDTO>> getAllRolePermissions() {
         LOG.debug("REST request to get all RolePermissions");
         return rolePermissionService.findAll().collectList();
     }
@@ -174,7 +174,7 @@ public class RolePermissionResource {
      * @return the {@link Flux} of rolePermissions.
      */
     @GetMapping(value = "", produces = MediaType.APPLICATION_NDJSON_VALUE)
-    public Flux<RolePermission> getAllRolePermissionsAsStream() {
+    public Flux<RolePermissionDTO> getAllRolePermissionsAsStream() {
         LOG.debug("REST request to get all RolePermissions as a stream");
         return rolePermissionService.findAll();
     }
@@ -182,20 +182,20 @@ public class RolePermissionResource {
     /**
      * {@code GET  /role-permissions/:id} : get the "id" rolePermission.
      *
-     * @param id the id of the rolePermission to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the rolePermission, or with status {@code 404 (Not Found)}.
+     * @param id the id of the rolePermissionDTO to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the rolePermissionDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public Mono<ResponseEntity<RolePermission>> getRolePermission(@PathVariable("id") Long id) {
+    public Mono<ResponseEntity<RolePermissionDTO>> getRolePermission(@PathVariable("id") Long id) {
         LOG.debug("REST request to get RolePermission : {}", id);
-        Mono<RolePermission> rolePermission = rolePermissionService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(rolePermission);
+        Mono<RolePermissionDTO> rolePermissionDTO = rolePermissionService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(rolePermissionDTO);
     }
 
     /**
      * {@code DELETE  /role-permissions/:id} : delete the "id" rolePermission.
      *
-     * @param id the id of the rolePermission to delete.
+     * @param id the id of the rolePermissionDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
@@ -220,7 +220,7 @@ public class RolePermissionResource {
      * @return the result of the search.
      */
     @GetMapping("/_search")
-    public Mono<List<RolePermission>> searchRolePermissions(@RequestParam("query") String query) {
+    public Mono<List<RolePermissionDTO>> searchRolePermissions(@RequestParam("query") String query) {
         LOG.debug("REST request to search RolePermissions for query {}", query);
         try {
             return rolePermissionService.search(query).collectList();

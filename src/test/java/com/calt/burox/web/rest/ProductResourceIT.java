@@ -14,6 +14,8 @@ import com.calt.burox.domain.Product;
 import com.calt.burox.repository.EntityManager;
 import com.calt.burox.repository.ProductRepository;
 import com.calt.burox.repository.search.ProductSearchRepository;
+import com.calt.burox.service.dto.ProductDTO;
+import com.calt.burox.service.mapper.ProductMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -67,6 +69,9 @@ class ProductResourceIT {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private ProductMapper productMapper;
 
     @Autowired
     private ProductSearchRepository productSearchRepository;
@@ -144,20 +149,22 @@ class ProductResourceIT {
         long databaseSizeBeforeCreate = getRepositoryCount();
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(productSearchRepository.findAll().collectList().block());
         // Create the Product
-        var returnedProduct = webTestClient
+        ProductDTO productDTO = productMapper.toDto(product);
+        var returnedProductDTO = webTestClient
             .post()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(product))
+            .bodyValue(om.writeValueAsBytes(productDTO))
             .exchange()
             .expectStatus()
             .isCreated()
-            .expectBody(Product.class)
+            .expectBody(ProductDTO.class)
             .returnResult()
             .getResponseBody();
 
         // Validate the Product in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        var returnedProduct = productMapper.toEntity(returnedProductDTO);
         assertProductUpdatableFieldsEquals(returnedProduct, getPersistedProduct(returnedProduct));
 
         await()
@@ -174,6 +181,7 @@ class ProductResourceIT {
     void createProductWithExistingId() throws Exception {
         // Create the Product with an existing ID
         product.setId(1L);
+        ProductDTO productDTO = productMapper.toDto(product);
 
         long databaseSizeBeforeCreate = getRepositoryCount();
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(productSearchRepository.findAll().collectList().block());
@@ -183,7 +191,7 @@ class ProductResourceIT {
             .post()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(product))
+            .bodyValue(om.writeValueAsBytes(productDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -202,12 +210,13 @@ class ProductResourceIT {
         product.setName(null);
 
         // Create the Product, which fails.
+        ProductDTO productDTO = productMapper.toDto(product);
 
         webTestClient
             .post()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(product))
+            .bodyValue(om.writeValueAsBytes(productDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -226,12 +235,13 @@ class ProductResourceIT {
         product.setQuantity(null);
 
         // Create the Product, which fails.
+        ProductDTO productDTO = productMapper.toDto(product);
 
         webTestClient
             .post()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(product))
+            .bodyValue(om.writeValueAsBytes(productDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -250,12 +260,13 @@ class ProductResourceIT {
         product.setPrice(null);
 
         // Create the Product, which fails.
+        ProductDTO productDTO = productMapper.toDto(product);
 
         webTestClient
             .post()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(product))
+            .bodyValue(om.writeValueAsBytes(productDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -355,12 +366,13 @@ class ProductResourceIT {
             .price(UPDATED_PRICE)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT);
+        ProductDTO productDTO = productMapper.toDto(updatedProduct);
 
         webTestClient
             .put()
-            .uri(ENTITY_API_URL_ID, updatedProduct.getId())
+            .uri(ENTITY_API_URL_ID, productDTO.getId())
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(updatedProduct))
+            .bodyValue(om.writeValueAsBytes(productDTO))
             .exchange()
             .expectStatus()
             .isOk();
@@ -389,12 +401,15 @@ class ProductResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(productSearchRepository.findAll().collectList().block());
         product.setId(longCount.incrementAndGet());
 
+        // Create the Product
+        ProductDTO productDTO = productMapper.toDto(product);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         webTestClient
             .put()
-            .uri(ENTITY_API_URL_ID, product.getId())
+            .uri(ENTITY_API_URL_ID, productDTO.getId())
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(product))
+            .bodyValue(om.writeValueAsBytes(productDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -411,12 +426,15 @@ class ProductResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(productSearchRepository.findAll().collectList().block());
         product.setId(longCount.incrementAndGet());
 
+        // Create the Product
+        ProductDTO productDTO = productMapper.toDto(product);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .put()
             .uri(ENTITY_API_URL_ID, longCount.incrementAndGet())
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(product))
+            .bodyValue(om.writeValueAsBytes(productDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -433,12 +451,15 @@ class ProductResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(productSearchRepository.findAll().collectList().block());
         product.setId(longCount.incrementAndGet());
 
+        // Create the Product
+        ProductDTO productDTO = productMapper.toDto(product);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .put()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(product))
+            .bodyValue(om.writeValueAsBytes(productDTO))
             .exchange()
             .expectStatus()
             .isEqualTo(405);
@@ -516,12 +537,15 @@ class ProductResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(productSearchRepository.findAll().collectList().block());
         product.setId(longCount.incrementAndGet());
 
+        // Create the Product
+        ProductDTO productDTO = productMapper.toDto(product);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         webTestClient
             .patch()
-            .uri(ENTITY_API_URL_ID, product.getId())
+            .uri(ENTITY_API_URL_ID, productDTO.getId())
             .contentType(MediaType.valueOf("application/merge-patch+json"))
-            .bodyValue(om.writeValueAsBytes(product))
+            .bodyValue(om.writeValueAsBytes(productDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -538,12 +562,15 @@ class ProductResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(productSearchRepository.findAll().collectList().block());
         product.setId(longCount.incrementAndGet());
 
+        // Create the Product
+        ProductDTO productDTO = productMapper.toDto(product);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .patch()
             .uri(ENTITY_API_URL_ID, longCount.incrementAndGet())
             .contentType(MediaType.valueOf("application/merge-patch+json"))
-            .bodyValue(om.writeValueAsBytes(product))
+            .bodyValue(om.writeValueAsBytes(productDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -560,12 +587,15 @@ class ProductResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(productSearchRepository.findAll().collectList().block());
         product.setId(longCount.incrementAndGet());
 
+        // Create the Product
+        ProductDTO productDTO = productMapper.toDto(product);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .patch()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.valueOf("application/merge-patch+json"))
-            .bodyValue(om.writeValueAsBytes(product))
+            .bodyValue(om.writeValueAsBytes(productDTO))
             .exchange()
             .expectStatus()
             .isEqualTo(405);

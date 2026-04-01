@@ -1,8 +1,8 @@
 package com.calt.burox.web.rest;
 
-import com.calt.burox.domain.UserRole;
 import com.calt.burox.repository.UserRoleRepository;
 import com.calt.burox.service.UserRoleService;
+import com.calt.burox.service.dto.UserRoleDTO;
 import com.calt.burox.web.rest.errors.BadRequestAlertException;
 import com.calt.burox.web.rest.errors.ElasticsearchExceptionMapper;
 import jakarta.validation.Valid;
@@ -50,18 +50,18 @@ public class UserRoleResource {
     /**
      * {@code POST  /user-roles} : Create a new userRole.
      *
-     * @param userRole the userRole to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new userRole, or with status {@code 400 (Bad Request)} if the userRole has already an ID.
+     * @param userRoleDTO the userRoleDTO to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new userRoleDTO, or with status {@code 400 (Bad Request)} if the userRole has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public Mono<ResponseEntity<UserRole>> createUserRole(@Valid @RequestBody UserRole userRole) throws URISyntaxException {
-        LOG.debug("REST request to save UserRole : {}", userRole);
-        if (userRole.getId() != null) {
+    public Mono<ResponseEntity<UserRoleDTO>> createUserRole(@Valid @RequestBody UserRoleDTO userRoleDTO) throws URISyntaxException {
+        LOG.debug("REST request to save UserRole : {}", userRoleDTO);
+        if (userRoleDTO.getId() != null) {
             throw new BadRequestAlertException("A new userRole cannot already have an ID", ENTITY_NAME, "idexists");
         }
         return userRoleService
-            .save(userRole)
+            .save(userRoleDTO)
             .map(result -> {
                 try {
                     return ResponseEntity.created(new URI("/api/user-roles/" + result.getId()))
@@ -76,23 +76,23 @@ public class UserRoleResource {
     /**
      * {@code PUT  /user-roles/:id} : Updates an existing userRole.
      *
-     * @param id the id of the userRole to save.
-     * @param userRole the userRole to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated userRole,
-     * or with status {@code 400 (Bad Request)} if the userRole is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the userRole couldn't be updated.
+     * @param id the id of the userRoleDTO to save.
+     * @param userRoleDTO the userRoleDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated userRoleDTO,
+     * or with status {@code 400 (Bad Request)} if the userRoleDTO is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the userRoleDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
-    public Mono<ResponseEntity<UserRole>> updateUserRole(
+    public Mono<ResponseEntity<UserRoleDTO>> updateUserRole(
         @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody UserRole userRole
+        @Valid @RequestBody UserRoleDTO userRoleDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to update UserRole : {}, {}", id, userRole);
-        if (userRole.getId() == null) {
+        LOG.debug("REST request to update UserRole : {}, {}", id, userRoleDTO);
+        if (userRoleDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, userRole.getId())) {
+        if (!Objects.equals(id, userRoleDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -104,7 +104,7 @@ public class UserRoleResource {
                 }
 
                 return userRoleService
-                    .update(userRole)
+                    .update(userRoleDTO)
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                     .map(result ->
                         ResponseEntity.ok()
@@ -117,24 +117,24 @@ public class UserRoleResource {
     /**
      * {@code PATCH  /user-roles/:id} : Partial updates given fields of an existing userRole, field will ignore if it is null
      *
-     * @param id the id of the userRole to save.
-     * @param userRole the userRole to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated userRole,
-     * or with status {@code 400 (Bad Request)} if the userRole is not valid,
-     * or with status {@code 404 (Not Found)} if the userRole is not found,
-     * or with status {@code 500 (Internal Server Error)} if the userRole couldn't be updated.
+     * @param id the id of the userRoleDTO to save.
+     * @param userRoleDTO the userRoleDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated userRoleDTO,
+     * or with status {@code 400 (Bad Request)} if the userRoleDTO is not valid,
+     * or with status {@code 404 (Not Found)} if the userRoleDTO is not found,
+     * or with status {@code 500 (Internal Server Error)} if the userRoleDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public Mono<ResponseEntity<UserRole>> partialUpdateUserRole(
+    public Mono<ResponseEntity<UserRoleDTO>> partialUpdateUserRole(
         @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody UserRole userRole
+        @NotNull @RequestBody UserRoleDTO userRoleDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update UserRole partially : {}, {}", id, userRole);
-        if (userRole.getId() == null) {
+        LOG.debug("REST request to partial update UserRole partially : {}, {}", id, userRoleDTO);
+        if (userRoleDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, userRole.getId())) {
+        if (!Objects.equals(id, userRoleDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -145,7 +145,7 @@ public class UserRoleResource {
                     return Mono.error(new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound"));
                 }
 
-                Mono<UserRole> result = userRoleService.partialUpdate(userRole);
+                Mono<UserRoleDTO> result = userRoleService.partialUpdate(userRoleDTO);
 
                 return result
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
@@ -163,7 +163,7 @@ public class UserRoleResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of userRoles in body.
      */
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<List<UserRole>> getAllUserRoles() {
+    public Mono<List<UserRoleDTO>> getAllUserRoles() {
         LOG.debug("REST request to get all UserRoles");
         return userRoleService.findAll().collectList();
     }
@@ -173,7 +173,7 @@ public class UserRoleResource {
      * @return the {@link Flux} of userRoles.
      */
     @GetMapping(value = "", produces = MediaType.APPLICATION_NDJSON_VALUE)
-    public Flux<UserRole> getAllUserRolesAsStream() {
+    public Flux<UserRoleDTO> getAllUserRolesAsStream() {
         LOG.debug("REST request to get all UserRoles as a stream");
         return userRoleService.findAll();
     }
@@ -181,20 +181,20 @@ public class UserRoleResource {
     /**
      * {@code GET  /user-roles/:id} : get the "id" userRole.
      *
-     * @param id the id of the userRole to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the userRole, or with status {@code 404 (Not Found)}.
+     * @param id the id of the userRoleDTO to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the userRoleDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public Mono<ResponseEntity<UserRole>> getUserRole(@PathVariable("id") Long id) {
+    public Mono<ResponseEntity<UserRoleDTO>> getUserRole(@PathVariable("id") Long id) {
         LOG.debug("REST request to get UserRole : {}", id);
-        Mono<UserRole> userRole = userRoleService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(userRole);
+        Mono<UserRoleDTO> userRoleDTO = userRoleService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(userRoleDTO);
     }
 
     /**
      * {@code DELETE  /user-roles/:id} : delete the "id" userRole.
      *
-     * @param id the id of the userRole to delete.
+     * @param id the id of the userRoleDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
@@ -219,7 +219,7 @@ public class UserRoleResource {
      * @return the result of the search.
      */
     @GetMapping("/_search")
-    public Mono<List<UserRole>> searchUserRoles(@RequestParam("query") String query) {
+    public Mono<List<UserRoleDTO>> searchUserRoles(@RequestParam("query") String query) {
         LOG.debug("REST request to search UserRoles for query {}", query);
         try {
             return userRoleService.search(query).collectList();

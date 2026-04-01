@@ -63,3 +63,6 @@ paginate Role with pagination
 paginate Category with pagination
 paginate Product with  pagination
 
+dto * with mapstruct
+
+

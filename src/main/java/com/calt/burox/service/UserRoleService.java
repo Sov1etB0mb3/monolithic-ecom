@@ -1,8 +1,9 @@
 package com.calt.burox.service;
 
-import com.calt.burox.domain.UserRole;
 import com.calt.burox.repository.UserRoleRepository;
 import com.calt.burox.repository.search.UserRoleSearchRepository;
+import com.calt.burox.service.dto.UserRoleDTO;
+import com.calt.burox.service.mapper.UserRoleMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -21,51 +22,70 @@ public class UserRoleService {
 
     private final UserRoleRepository userRoleRepository;
 
+    private final UserRoleMapper userRoleMapper;
+
     private final UserRoleSearchRepository userRoleSearchRepository;
 
-    public UserRoleService(UserRoleRepository userRoleRepository, UserRoleSearchRepository userRoleSearchRepository) {
+    public UserRoleService(
+        UserRoleRepository userRoleRepository,
+        UserRoleMapper userRoleMapper,
+        UserRoleSearchRepository userRoleSearchRepository
+    ) {
         this.userRoleRepository = userRoleRepository;
+        this.userRoleMapper = userRoleMapper;
         this.userRoleSearchRepository = userRoleSearchRepository;
     }
 
     /**
      * Save a userRole.
      *
-     * @param userRole the entity to save.
+     * @param userRoleDTO the entity to save.
      * @return the persisted entity.
      */
-    public Mono<UserRole> save(UserRole userRole) {
-        LOG.debug("Request to save UserRole : {}", userRole);
-        return userRoleRepository.save(userRole).flatMap(userRoleSearchRepository::save);
+    public Mono<UserRoleDTO> save(UserRoleDTO userRoleDTO) {
+        LOG.debug("Request to save UserRole : {}", userRoleDTO);
+        return userRoleRepository
+            .save(userRoleMapper.toEntity(userRoleDTO))
+            .flatMap(userRoleSearchRepository::save)
+            .map(userRoleMapper::toDto);
     }
 
     /**
      * Update a userRole.
      *
-     * @param userRole the entity to save.
+     * @param userRoleDTO the entity to save.
      * @return the persisted entity.
      */
-    public Mono<UserRole> update(UserRole userRole) {
-        LOG.debug("Request to update UserRole : {}", userRole);
-        return userRoleRepository.save(userRole).flatMap(userRoleSearchRepository::save);
+    public Mono<UserRoleDTO> update(UserRoleDTO userRoleDTO) {
+        LOG.debug("Request to update UserRole : {}", userRoleDTO);
+        return userRoleRepository
+            .save(userRoleMapper.toEntity(userRoleDTO))
+            .flatMap(userRoleSearchRepository::save)
+            .map(userRoleMapper::toDto);
     }
 
     /**
      * Partially update a userRole.
      *
-     * @param userRole the entity to update partially.
+     * @param userRoleDTO the entity to update partially.
      * @return the persisted entity.
      */
-    public Mono<UserRole> partialUpdate(UserRole userRole) {
-        LOG.debug("Request to partially update UserRole : {}", userRole);
+    public Mono<UserRoleDTO> partialUpdate(UserRoleDTO userRoleDTO) {
+        LOG.debug("Request to partially update UserRole : {}", userRoleDTO);
 
         return userRoleRepository
-            .findById(userRole.getId())
+            .findById(userRoleDTO.getId())
+            .map(existingUserRole -> {
+                userRoleMapper.partialUpdate(existingUserRole, userRoleDTO);
+
+                return existingUserRole;
+            })
             .flatMap(userRoleRepository::save)
             .flatMap(savedUserRole -> {
                 userRoleSearchRepository.save(savedUserRole);
                 return Mono.just(savedUserRole);
-            });
+            })
+            .map(userRoleMapper::toDto);
     }
 
     /**
@@ -74,9 +94,9 @@ public class UserRoleService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Flux<UserRole> findAll() {
+    public Flux<UserRoleDTO> findAll() {
         LOG.debug("Request to get all UserRoles");
-        return userRoleRepository.findAll();
+        return userRoleRepository.findAll().map(userRoleMapper::toDto);
     }
 
     /**
@@ -103,9 +123,9 @@ public class UserRoleService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Mono<UserRole> findOne(Long id) {
+    public Mono<UserRoleDTO> findOne(Long id) {
         LOG.debug("Request to get UserRole : {}", id);
-        return userRoleRepository.findById(id);
+        return userRoleRepository.findById(id).map(userRoleMapper::toDto);
     }
 
     /**
@@ -126,10 +146,10 @@ public class UserRoleService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Flux<UserRole> search(String query) {
+    public Flux<UserRoleDTO> search(String query) {
         LOG.debug("Request to search UserRoles for query {}", query);
         try {
-            return userRoleSearchRepository.search(query);
+            return userRoleSearchRepository.search(query).map(userRoleMapper::toDto);
         } catch (RuntimeException e) {
             throw e;
         }

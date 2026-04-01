@@ -1,8 +1,9 @@
 package com.calt.burox.service;
 
-import com.calt.burox.domain.Permission;
 import com.calt.burox.repository.PermissionRepository;
 import com.calt.burox.repository.search.PermissionSearchRepository;
+import com.calt.burox.service.dto.PermissionDTO;
+import com.calt.burox.service.mapper.PermissionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -22,53 +23,61 @@ public class PermissionService {
 
     private final PermissionRepository permissionRepository;
 
+    private final PermissionMapper permissionMapper;
+
     private final PermissionSearchRepository permissionSearchRepository;
 
-    public PermissionService(PermissionRepository permissionRepository, PermissionSearchRepository permissionSearchRepository) {
+    public PermissionService(
+        PermissionRepository permissionRepository,
+        PermissionMapper permissionMapper,
+        PermissionSearchRepository permissionSearchRepository
+    ) {
         this.permissionRepository = permissionRepository;
+        this.permissionMapper = permissionMapper;
         this.permissionSearchRepository = permissionSearchRepository;
     }
 
     /**
      * Save a permission.
      *
-     * @param permission the entity to save.
+     * @param permissionDTO the entity to save.
      * @return the persisted entity.
      */
-    public Mono<Permission> save(Permission permission) {
-        LOG.debug("Request to save Permission : {}", permission);
-        return permissionRepository.save(permission).flatMap(permissionSearchRepository::save);
+    public Mono<PermissionDTO> save(PermissionDTO permissionDTO) {
+        LOG.debug("Request to save Permission : {}", permissionDTO);
+        return permissionRepository
+            .save(permissionMapper.toEntity(permissionDTO))
+            .flatMap(permissionSearchRepository::save)
+            .map(permissionMapper::toDto);
     }
 
     /**
      * Update a permission.
      *
-     * @param permission the entity to save.
+     * @param permissionDTO the entity to save.
      * @return the persisted entity.
      */
-    public Mono<Permission> update(Permission permission) {
-        LOG.debug("Request to update Permission : {}", permission);
-        return permissionRepository.save(permission).flatMap(permissionSearchRepository::save);
+    public Mono<PermissionDTO> update(PermissionDTO permissionDTO) {
+        LOG.debug("Request to update Permission : {}", permissionDTO);
+        return permissionRepository
+            .save(permissionMapper.toEntity(permissionDTO))
+            .flatMap(permissionSearchRepository::save)
+            .map(permissionMapper::toDto);
     }
 
     /**
      * Partially update a permission.
      *
-     * @param permission the entity to update partially.
+     * @param permissionDTO the entity to update partially.
      * @return the persisted entity.
      */
-    public Mono<Permission> partialUpdate(Permission permission) {
-        LOG.debug("Request to partially update Permission : {}", permission);
+    public Mono<PermissionDTO> partialUpdate(PermissionDTO permissionDTO) {
+        LOG.debug("Request to partially update Permission : {}", permissionDTO);
 
         return permissionRepository
-            .findById(permission.getId())
+            .findById(permissionDTO.getId())
             .map(existingPermission -> {
-                if (permission.getName() != null) {
-                    existingPermission.setName(permission.getName());
-                }
-                if (permission.getDescription() != null) {
-                    existingPermission.setDescription(permission.getDescription());
-                }
+                permissionMapper.partialUpdate(existingPermission, permissionDTO);
 
                 return existingPermission;
             })
@@ -76,7 +85,8 @@ public class PermissionService {
             .flatMap(savedPermission -> {
                 permissionSearchRepository.save(savedPermission);
                 return Mono.just(savedPermission);
-            });
+            })
+            .map(permissionMapper::toDto);
     }
 
     /**
@@ -86,9 +96,9 @@ public class PermissionService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Flux<Permission> findAll(Pageable pageable) {
+    public Flux<PermissionDTO> findAll(Pageable pageable) {
         LOG.debug("Request to get all Permissions");
-        return permissionRepository.findAllBy(pageable);
+        return permissionRepository.findAllBy(pageable).map(permissionMapper::toDto);
     }
 
     /**
@@ -115,9 +125,9 @@ public class PermissionService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Mono<Permission> findOne(Long id) {
+    public Mono<PermissionDTO> findOne(Long id) {
         LOG.debug("Request to get Permission : {}", id);
-        return permissionRepository.findById(id);
+        return permissionRepository.findById(id).map(permissionMapper::toDto);
     }
 
     /**
@@ -139,8 +149,8 @@ public class PermissionService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Flux<Permission> search(String query, Pageable pageable) {
+    public Flux<PermissionDTO> search(String query, Pageable pageable) {
         LOG.debug("Request to search for a page of Permissions for query {}", query);
-        return permissionSearchRepository.search(query, pageable);
+        return permissionSearchRepository.search(query, pageable).map(permissionMapper::toDto);
     }
 }

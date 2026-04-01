@@ -1,8 +1,9 @@
 package com.calt.burox.service;
 
-import com.calt.burox.domain.RolePermission;
 import com.calt.burox.repository.RolePermissionRepository;
 import com.calt.burox.repository.search.RolePermissionSearchRepository;
+import com.calt.burox.service.dto.RolePermissionDTO;
+import com.calt.burox.service.mapper.RolePermissionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -21,54 +22,70 @@ public class RolePermissionService {
 
     private final RolePermissionRepository rolePermissionRepository;
 
+    private final RolePermissionMapper rolePermissionMapper;
+
     private final RolePermissionSearchRepository rolePermissionSearchRepository;
 
     public RolePermissionService(
         RolePermissionRepository rolePermissionRepository,
+        RolePermissionMapper rolePermissionMapper,
         RolePermissionSearchRepository rolePermissionSearchRepository
     ) {
         this.rolePermissionRepository = rolePermissionRepository;
+        this.rolePermissionMapper = rolePermissionMapper;
         this.rolePermissionSearchRepository = rolePermissionSearchRepository;
     }
 
     /**
      * Save a rolePermission.
      *
-     * @param rolePermission the entity to save.
+     * @param rolePermissionDTO the entity to save.
      * @return the persisted entity.
      */
-    public Mono<RolePermission> save(RolePermission rolePermission) {
-        LOG.debug("Request to save RolePermission : {}", rolePermission);
-        return rolePermissionRepository.save(rolePermission).flatMap(rolePermissionSearchRepository::save);
+    public Mono<RolePermissionDTO> save(RolePermissionDTO rolePermissionDTO) {
+        LOG.debug("Request to save RolePermission : {}", rolePermissionDTO);
+        return rolePermissionRepository
+            .save(rolePermissionMapper.toEntity(rolePermissionDTO))
+            .flatMap(rolePermissionSearchRepository::save)
+            .map(rolePermissionMapper::toDto);
     }
 
     /**
      * Update a rolePermission.
      *
-     * @param rolePermission the entity to save.
+     * @param rolePermissionDTO the entity to save.
      * @return the persisted entity.
      */
-    public Mono<RolePermission> update(RolePermission rolePermission) {
-        LOG.debug("Request to update RolePermission : {}", rolePermission);
-        return rolePermissionRepository.save(rolePermission).flatMap(rolePermissionSearchRepository::save);
+    public Mono<RolePermissionDTO> update(RolePermissionDTO rolePermissionDTO) {
+        LOG.debug("Request to update RolePermission : {}", rolePermissionDTO);
+        return rolePermissionRepository
+            .save(rolePermissionMapper.toEntity(rolePermissionDTO))
+            .flatMap(rolePermissionSearchRepository::save)
+            .map(rolePermissionMapper::toDto);
     }
 
     /**
      * Partially update a rolePermission.
      *
-     * @param rolePermission the entity to update partially.
+     * @param rolePermissionDTO the entity to update partially.
      * @return the persisted entity.
      */
-    public Mono<RolePermission> partialUpdate(RolePermission rolePermission) {
-        LOG.debug("Request to partially update RolePermission : {}", rolePermission);
+    public Mono<RolePermissionDTO> partialUpdate(RolePermissionDTO rolePermissionDTO) {
+        LOG.debug("Request to partially update RolePermission : {}", rolePermissionDTO);
 
         return rolePermissionRepository
-            .findById(rolePermission.getId())
+            .findById(rolePermissionDTO.getId())
+            .map(existingRolePermission -> {
+                rolePermissionMapper.partialUpdate(existingRolePermission, rolePermissionDTO);
+
+                return existingRolePermission;
+            })
             .flatMap(rolePermissionRepository::save)
             .flatMap(savedRolePermission -> {
                 rolePermissionSearchRepository.save(savedRolePermission);
                 return Mono.just(savedRolePermission);
-            });
+            })
+            .map(rolePermissionMapper::toDto);
     }
 
     /**
@@ -77,9 +94,9 @@ public class RolePermissionService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Flux<RolePermission> findAll() {
+    public Flux<RolePermissionDTO> findAll() {
         LOG.debug("Request to get all RolePermissions");
-        return rolePermissionRepository.findAll();
+        return rolePermissionRepository.findAll().map(rolePermissionMapper::toDto);
     }
 
     /**
@@ -106,9 +123,9 @@ public class RolePermissionService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Mono<RolePermission> findOne(Long id) {
+    public Mono<RolePermissionDTO> findOne(Long id) {
         LOG.debug("Request to get RolePermission : {}", id);
-        return rolePermissionRepository.findById(id);
+        return rolePermissionRepository.findById(id).map(rolePermissionMapper::toDto);
     }
 
     /**
@@ -129,10 +146,10 @@ public class RolePermissionService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Flux<RolePermission> search(String query) {
+    public Flux<RolePermissionDTO> search(String query) {
         LOG.debug("Request to search RolePermissions for query {}", query);
         try {
-            return rolePermissionSearchRepository.search(query);
+            return rolePermissionSearchRepository.search(query).map(rolePermissionMapper::toDto);
         } catch (RuntimeException e) {
             throw e;
         }

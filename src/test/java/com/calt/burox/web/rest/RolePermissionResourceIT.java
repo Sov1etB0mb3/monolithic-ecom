@@ -16,6 +16,8 @@ import com.calt.burox.domain.RolePermission;
 import com.calt.burox.repository.EntityManager;
 import com.calt.burox.repository.RolePermissionRepository;
 import com.calt.burox.repository.search.RolePermissionSearchRepository;
+import com.calt.burox.service.dto.RolePermissionDTO;
+import com.calt.burox.service.mapper.RolePermissionMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.util.List;
@@ -53,6 +55,9 @@ class RolePermissionResourceIT {
 
     @Autowired
     private RolePermissionRepository rolePermissionRepository;
+
+    @Autowired
+    private RolePermissionMapper rolePermissionMapper;
 
     @Autowired
     private RolePermissionSearchRepository rolePermissionSearchRepository;
@@ -140,20 +145,22 @@ class RolePermissionResourceIT {
         long databaseSizeBeforeCreate = getRepositoryCount();
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(rolePermissionSearchRepository.findAll().collectList().block());
         // Create the RolePermission
-        var returnedRolePermission = webTestClient
+        RolePermissionDTO rolePermissionDTO = rolePermissionMapper.toDto(rolePermission);
+        var returnedRolePermissionDTO = webTestClient
             .post()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(rolePermission))
+            .bodyValue(om.writeValueAsBytes(rolePermissionDTO))
             .exchange()
             .expectStatus()
             .isCreated()
-            .expectBody(RolePermission.class)
+            .expectBody(RolePermissionDTO.class)
             .returnResult()
             .getResponseBody();
 
         // Validate the RolePermission in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        var returnedRolePermission = rolePermissionMapper.toEntity(returnedRolePermissionDTO);
         assertRolePermissionUpdatableFieldsEquals(returnedRolePermission, getPersistedRolePermission(returnedRolePermission));
 
         await()
@@ -170,6 +177,7 @@ class RolePermissionResourceIT {
     void createRolePermissionWithExistingId() throws Exception {
         // Create the RolePermission with an existing ID
         rolePermission.setId(1L);
+        RolePermissionDTO rolePermissionDTO = rolePermissionMapper.toDto(rolePermission);
 
         long databaseSizeBeforeCreate = getRepositoryCount();
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(rolePermissionSearchRepository.findAll().collectList().block());
@@ -179,7 +187,7 @@ class RolePermissionResourceIT {
             .post()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(rolePermission))
+            .bodyValue(om.writeValueAsBytes(rolePermissionDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -204,8 +212,9 @@ class RolePermissionResourceIT {
             .isOk()
             .expectHeader()
             .contentTypeCompatibleWith(MediaType.APPLICATION_NDJSON)
-            .returnResult(RolePermission.class)
+            .returnResult(RolePermissionDTO.class)
             .getResponseBody()
+            .map(rolePermissionMapper::toEntity)
             .filter(rolePermission::equals)
             .collectList()
             .block(Duration.ofSeconds(5));
@@ -282,12 +291,13 @@ class RolePermissionResourceIT {
 
         // Update the rolePermission
         RolePermission updatedRolePermission = rolePermissionRepository.findById(rolePermission.getId()).block();
+        RolePermissionDTO rolePermissionDTO = rolePermissionMapper.toDto(updatedRolePermission);
 
         webTestClient
             .put()
-            .uri(ENTITY_API_URL_ID, updatedRolePermission.getId())
+            .uri(ENTITY_API_URL_ID, rolePermissionDTO.getId())
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(updatedRolePermission))
+            .bodyValue(om.writeValueAsBytes(rolePermissionDTO))
             .exchange()
             .expectStatus()
             .isOk();
@@ -318,12 +328,15 @@ class RolePermissionResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(rolePermissionSearchRepository.findAll().collectList().block());
         rolePermission.setId(longCount.incrementAndGet());
 
+        // Create the RolePermission
+        RolePermissionDTO rolePermissionDTO = rolePermissionMapper.toDto(rolePermission);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         webTestClient
             .put()
-            .uri(ENTITY_API_URL_ID, rolePermission.getId())
+            .uri(ENTITY_API_URL_ID, rolePermissionDTO.getId())
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(rolePermission))
+            .bodyValue(om.writeValueAsBytes(rolePermissionDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -340,12 +353,15 @@ class RolePermissionResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(rolePermissionSearchRepository.findAll().collectList().block());
         rolePermission.setId(longCount.incrementAndGet());
 
+        // Create the RolePermission
+        RolePermissionDTO rolePermissionDTO = rolePermissionMapper.toDto(rolePermission);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .put()
             .uri(ENTITY_API_URL_ID, longCount.incrementAndGet())
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(rolePermission))
+            .bodyValue(om.writeValueAsBytes(rolePermissionDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -362,12 +378,15 @@ class RolePermissionResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(rolePermissionSearchRepository.findAll().collectList().block());
         rolePermission.setId(longCount.incrementAndGet());
 
+        // Create the RolePermission
+        RolePermissionDTO rolePermissionDTO = rolePermissionMapper.toDto(rolePermission);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .put()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(om.writeValueAsBytes(rolePermission))
+            .bodyValue(om.writeValueAsBytes(rolePermissionDTO))
             .exchange()
             .expectStatus()
             .isEqualTo(405);
@@ -439,12 +458,15 @@ class RolePermissionResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(rolePermissionSearchRepository.findAll().collectList().block());
         rolePermission.setId(longCount.incrementAndGet());
 
+        // Create the RolePermission
+        RolePermissionDTO rolePermissionDTO = rolePermissionMapper.toDto(rolePermission);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         webTestClient
             .patch()
-            .uri(ENTITY_API_URL_ID, rolePermission.getId())
+            .uri(ENTITY_API_URL_ID, rolePermissionDTO.getId())
             .contentType(MediaType.valueOf("application/merge-patch+json"))
-            .bodyValue(om.writeValueAsBytes(rolePermission))
+            .bodyValue(om.writeValueAsBytes(rolePermissionDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -461,12 +483,15 @@ class RolePermissionResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(rolePermissionSearchRepository.findAll().collectList().block());
         rolePermission.setId(longCount.incrementAndGet());
 
+        // Create the RolePermission
+        RolePermissionDTO rolePermissionDTO = rolePermissionMapper.toDto(rolePermission);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .patch()
             .uri(ENTITY_API_URL_ID, longCount.incrementAndGet())
             .contentType(MediaType.valueOf("application/merge-patch+json"))
-            .bodyValue(om.writeValueAsBytes(rolePermission))
+            .bodyValue(om.writeValueAsBytes(rolePermissionDTO))
             .exchange()
             .expectStatus()
             .isBadRequest();
@@ -483,12 +508,15 @@ class RolePermissionResourceIT {
         int searchDatabaseSizeBefore = IterableUtil.sizeOf(rolePermissionSearchRepository.findAll().collectList().block());
         rolePermission.setId(longCount.incrementAndGet());
 
+        // Create the RolePermission
+        RolePermissionDTO rolePermissionDTO = rolePermissionMapper.toDto(rolePermission);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         webTestClient
             .patch()
             .uri(ENTITY_API_URL)
             .contentType(MediaType.valueOf("application/merge-patch+json"))
-            .bodyValue(om.writeValueAsBytes(rolePermission))
+            .bodyValue(om.writeValueAsBytes(rolePermissionDTO))
             .exchange()
             .expectStatus()
             .isEqualTo(405);

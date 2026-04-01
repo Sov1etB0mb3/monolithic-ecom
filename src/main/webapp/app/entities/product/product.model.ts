@@ -8,7 +8,7 @@ export interface IProduct {
   price?: number | null;
   createdAt?: dayjs.Dayjs | null;
   updatedAt?: dayjs.Dayjs | null;
-  category?: ICategory | null;
+  category?: Pick<ICategory, 'id'> | null;
 }
 
 export type NewProduct = Omit<IProduct, 'id'> & { id: null };

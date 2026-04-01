@@ -1,8 +1,9 @@
 package com.calt.burox.service;
 
-import com.calt.burox.domain.Role;
 import com.calt.burox.repository.RoleRepository;
 import com.calt.burox.repository.search.RoleSearchRepository;
+import com.calt.burox.service.dto.RoleDTO;
+import com.calt.burox.service.mapper.RoleMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -22,53 +23,51 @@ public class RoleService {
 
     private final RoleRepository roleRepository;
 
+    private final RoleMapper roleMapper;
+
     private final RoleSearchRepository roleSearchRepository;
 
-    public RoleService(RoleRepository roleRepository, RoleSearchRepository roleSearchRepository) {
+    public RoleService(RoleRepository roleRepository, RoleMapper roleMapper, RoleSearchRepository roleSearchRepository) {
         this.roleRepository = roleRepository;
+        this.roleMapper = roleMapper;
         this.roleSearchRepository = roleSearchRepository;
     }
 
     /**
      * Save a role.
      *
-     * @param role the entity to save.
+     * @param roleDTO the entity to save.
      * @return the persisted entity.
      */
-    public Mono<Role> save(Role role) {
-        LOG.debug("Request to save Role : {}", role);
-        return roleRepository.save(role).flatMap(roleSearchRepository::save);
+    public Mono<RoleDTO> save(RoleDTO roleDTO) {
+        LOG.debug("Request to save Role : {}", roleDTO);
+        return roleRepository.save(roleMapper.toEntity(roleDTO)).flatMap(roleSearchRepository::save).map(roleMapper::toDto);
     }
 
     /**
      * Update a role.
      *
-     * @param role the entity to save.
+     * @param roleDTO the entity to save.
      * @return the persisted entity.
      */
-    public Mono<Role> update(Role role) {
-        LOG.debug("Request to update Role : {}", role);
-        return roleRepository.save(role).flatMap(roleSearchRepository::save);
+    public Mono<RoleDTO> update(RoleDTO roleDTO) {
+        LOG.debug("Request to update Role : {}", roleDTO);
+        return roleRepository.save(roleMapper.toEntity(roleDTO)).flatMap(roleSearchRepository::save).map(roleMapper::toDto);
     }
 
     /**
      * Partially update a role.
      *
-     * @param role the entity to update partially.
+     * @param roleDTO the entity to update partially.
      * @return the persisted entity.
      */
-    public Mono<Role> partialUpdate(Role role) {
-        LOG.debug("Request to partially update Role : {}", role);
+    public Mono<RoleDTO> partialUpdate(RoleDTO roleDTO) {
+        LOG.debug("Request to partially update Role : {}", roleDTO);
 
         return roleRepository
-            .findById(role.getId())
+            .findById(roleDTO.getId())
             .map(existingRole -> {
-                if (role.getName() != null) {
-                    existingRole.setName(role.getName());
-                }
-                if (role.getDescription() != null) {
-                    existingRole.setDescription(role.getDescription());
-                }
+                roleMapper.partialUpdate(existingRole, roleDTO);
 
                 return existingRole;
             })
@@ -76,7 +75,8 @@ public class RoleService {
             .flatMap(savedRole -> {
                 roleSearchRepository.save(savedRole);
                 return Mono.just(savedRole);
-            });
+            })
+            .map(roleMapper::toDto);
     }
 
     /**
@@ -86,9 +86,9 @@ public class RoleService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Flux<Role> findAll(Pageable pageable) {
+    public Flux<RoleDTO> findAll(Pageable pageable) {
         LOG.debug("Request to get all Roles");
-        return roleRepository.findAllBy(pageable);
+        return roleRepository.findAllBy(pageable).map(roleMapper::toDto);
     }
 
     /**
@@ -115,9 +115,9 @@ public class RoleService {
      * @return the entity.
      */
     @Transactional(readOnly = true)
-    public Mono<Role> findOne(Long id) {
+    public Mono<RoleDTO> findOne(Long id) {
         LOG.debug("Request to get Role : {}", id);
-        return roleRepository.findById(id);
+        return roleRepository.findById(id).map(roleMapper::toDto);
     }
 
     /**
@@ -139,8 +139,8 @@ public class RoleService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Flux<Role> search(String query, Pageable pageable) {
+    public Flux<RoleDTO> search(String query, Pageable pageable) {
         LOG.debug("Request to search for a page of Roles for query {}", query);
-        return roleSearchRepository.search(query, pageable);
+        return roleSearchRepository.search(query, pageable).map(roleMapper::toDto);
     }
 }
